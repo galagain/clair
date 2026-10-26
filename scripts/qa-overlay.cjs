@@ -14,7 +14,7 @@ const {execFileSync}=require('node:child_process');
  let initial;
  const pointer=(kind,x,y,...rest)=>execFileSync(helper,[kind,String(x),String(y),...rest.map(String)]);
  try{
-  const page=await app.firstWindow();await page.waitForFunction(()=>document.body.dataset.sessionStatus.includes('Configurez'));
+  const page=await app.firstWindow();await page.waitForFunction(()=>document.body.dataset.sessionStatus?.includes('Configurez'));
   const setup=await app.evaluate(async({BrowserWindow,screen,ipcMain})=>{
    const main=BrowserWindow.getAllWindows()[0],cursor=screen.getCursorScreenPoint();global.qaMain=main;const original=main.setIgnoreMouseEvents.bind(main);main.setIgnoreMouseEvents=(value,options)=>{global.qaIgnored=value;return original(value,options);};ipcMain.on('window:layout',(_e,data)=>global.qaLayout=data);
    const bounds=main.getBounds();const under=new BrowserWindow({x:bounds.x-30,y:bounds.y-20,width:bounds.width+60,height:Math.max(650,bounds.height+80),show:false,acceptFirstMouse:true,webPreferences:{sandbox:true}});global.qaUnder=under;

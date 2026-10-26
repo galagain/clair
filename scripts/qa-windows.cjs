@@ -11,7 +11,7 @@ const pdfFixture=require('../test/pdf-fixture.cjs');
  const errors=[];
  try{
   const page=await app.firstWindow();page.on('pageerror',error=>errors.push(error.message));
-  await page.waitForFunction(()=>document.body.dataset.sessionStatus.includes('Configurez'));
+  await page.waitForFunction(()=>document.body.dataset.sessionStatus?.includes('Configurez'));
   const config=await page.evaluate(()=>window.clair.config());assert.equal(config.platform,'win32');assert.equal(config.hasKey,false);assert.equal(config.nativeAudio,false);
   assert.equal(await app.evaluate(({app})=>app.isPackaged),true);
   await page.locator('#more-toggle').click();await page.locator('#demo').click();
@@ -29,7 +29,7 @@ const pdfFixture=require('../test/pdf-fixture.cjs');
    navigator.mediaDevices.getUserMedia=()=>signal(220);
   });
   await page.locator('#settings-tab').click();await page.locator('#audio-test').click();
-  await page.waitForFunction(()=>document.body.dataset.sessionStatus.includes('Ordinateur ✓ · Micro ✓'));
+  await page.waitForFunction(()=>document.body.dataset.sessionStatus?.includes('Ordinateur ✓ · Micro ✓'));
   await page.locator('#listen').click();
   assert.equal(await page.evaluate(()=>window.qaSignals.every(s=>s.stream.getTracks().every(t=>t.readyState==='ended'))),true);
   await page.evaluate(async()=>{for(const s of window.qaSignals){s.oscillator.stop();await s.ctx.close();}});

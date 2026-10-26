@@ -11,7 +11,7 @@ const os=require('node:os');
  const errors=[];app.context().setDefaultTimeout(15000);
  try{
   const page=await app.firstWindow();page.on('pageerror',e=>{errors.push(e.message);console.error('Renderer:',e.message);});
-  await page.waitForFunction(()=>document.body.dataset.sessionStatus.includes('Configurez'));
+  await page.waitForFunction(()=>document.body.dataset.sessionStatus?.includes('Configurez'));
   const native=await app.evaluate(({app,BrowserWindow,Menu})=>({packaged:app.isPackaged,profile:app.getPath('userData'),pinned:BrowserWindow.getAllWindows()[0].isAlwaysOnTop(),menu:!!Menu.getApplicationMenu(),background:BrowserWindow.getAllWindows()[0].getBackgroundColor()}));
   assert.match(native.background,/^#000000(?:00)?$/);assert.equal(native.profile,profile);assert.ok(native.packaged&&native.pinned&&native.menu);
   // Exercise the bundled Windows PDF fallback on Mac too, including ASAR loading.
@@ -230,7 +230,7 @@ const os=require('node:os');
     window.qaAudio={ctx,oscillator,stream:dest.stream};return dest.stream;
    };
   });
-  await page.locator('#audio-test').click();await page.waitForFunction(()=>document.body.dataset.sessionStatus.includes('Ordinateur ✓ · Micro ✓'));
+  await page.locator('#audio-test').click();await page.waitForFunction(()=>document.body.dataset.sessionStatus?.includes('Ordinateur ✓ · Micro ✓'));
   assert.equal((await page.evaluate(()=>window.clair.config())).hasKey,false);assert.equal(await page.locator('#answer-language').inputValue(),'fr');assert.equal(await page.locator('#answer-language option[value=auto]').count(),0);
   await page.locator('#listen').click();await page.waitForFunction(()=>document.querySelector('#listen').textContent.includes('Démarrer'));
   assert.equal(await page.evaluate(()=>window.qaAudio.stream.getTracks().every(t=>t.readyState==='ended')),true);
