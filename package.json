@@ -1,0 +1,90 @@
+{
+  "name": "clair-desktop",
+  "version": "0.18.0",
+  "private": true,
+  "description": "Transcription et assistance aux entretiens en visio",
+  "author": "Clair",
+  "license": "UNLICENSED",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.mjs",
+    "check": "node scripts/check.mjs",
+    "pack:win": "electron-builder --win --x64 --dir",
+    "dist:win": "electron-builder --win portable --x64 --publish never",
+    "dist:mac": "electron-builder --mac dmg --arm64 --publish never",
+    "dist:mac:intel": "electron-builder --mac dmg --x64 --publish never",
+    "pack:mac": "electron-builder --mac --arm64 --dir",
+    "qa:mac": "node scripts/qa-mac.cjs",
+    "build:native": "node scripts/build-native.cjs",
+    "qa:windows": "node scripts/qa-windows.cjs",
+    "verify:package": "node scripts/verify-package.cjs"
+  },
+  "dependencies": {
+    "pdf-parse": "2.4.5",
+    "ws": "8.22.0"
+  },
+  "devDependencies": {
+    "electron": "45.0.0",
+    "electron-builder": "26.18.0",
+    "playwright": "^1.64.1"
+  },
+  "build": {
+    "appId": "fr.clair.assistant",
+    "productName": "Clair",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "signAndEditExecutable": false,
+      "artifactName": "Clair-Windows-x64.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.productivity",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Clair utilise le microphone uniquement lorsque vous démarrez l’écoute.",
+        "NSAudioCaptureUsageDescription": "Clair transcrit le son de votre visio pour proposer une aide en français.",
+        "NSScreenCaptureUsageDescription": "Clair utilise la capture du système pour récupérer le son de la visio. Aucune image n’est envoyée."
+      },
+      "minimumSystemVersion": "15.0",
+      "identity": null,
+      "hardenedRuntime": false,
+      "extraResources": [
+        {
+          "from": "build/native/${arch}/clair-system-audio",
+          "to": "native/clair-system-audio"
+        },
+        {
+          "from": "build/native/${arch}/clair-pdf-text",
+          "to": "native/clair-pdf-text"
+        }
+      ],
+      "artifactName": "Clair-Mac-${arch}.${ext}"
+    },
+    "afterPack": "scripts/sign-mac.cjs",
+    "beforePack": "scripts/build-native.cjs",
+    "npmRebuild": false
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/galagain/clair.git"
+  },
+  "homepage": "https://github.com/galagain/clair",
+  "bugs": {
+    "url": "https://github.com/galagain/clair/issues"
+  }
+}

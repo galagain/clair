@@ -1,0 +1,4 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {SourceTurns} from '../src/source-turns.mjs';
+test('Only exclusive, sustained source activity is attributed',()=>{const source=new SourceTurns();source.add({micRms:.1,systemRms:0},100);assert.equal(source.speaker(),null);source.add({micRms:.1,systemRms:0},100);assert.equal(source.speaker(),'microphone');source.reset();source.add({micRms:0,systemRms:.1},300);assert.equal(source.speaker(),'system');source.reset();source.add(undefined,1000);assert.equal(source.speaker(),null);});
+test('Overlapping audio does not invent a speaker identity',()=>{const source=new SourceTurns();source.add({micRms:.1,systemRms:.1},400);source.add({micRms:.1,systemRms:0},300);assert.equal(source.speaker(),null);assert.equal(source.source({micRms:.1,systemRms:.1}),null);});

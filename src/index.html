@@ -1,0 +1,81 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-src 'none'"><title>Clair — Assistant d’entretien</title><link rel="stylesheet" href="style.css"></head>
+<body><svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7Z"/></symbol><symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/></symbol><symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol><symbol id="i-close" viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></symbol><symbol id="i-arrow" viewBox="0 0 24 24"><path d="M12 19V5m-6 6 6-6 6 6"/></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></symbol><symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1"/></symbol><symbol id="i-headphones" viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="12" width="4" height="8" rx="2"/><rect x="17" y="12" width="4" height="8" rx="2"/></symbol><symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.8 6.2L21 12l-6.2 2.8L12 21l-2.8-6.2L3 12l6.2-2.8Z"/></symbol></defs></svg>
+<header class="titlebar glass">
+ <div class="opacity-control">
+  <button id="opacity-toggle" class="opacity-toggle" aria-label="Régler l’opacité" title="Régler l’opacité" aria-expanded="false" aria-controls="opacity"><span id="status-dot" class="status-dot" aria-hidden="true"></span></button>
+  <input id="opacity" type="range" min="0.35" max="1" step="0.01" value="1" aria-label="Opacité" title="Opacité : 100 %" hidden>
+ </div>
+ <button id="session-tab" class="brand selected" aria-label="Assistant" title="Assistant" aria-current="page"><span>clair<span class="brand-period">.</span></span></button>
+ <div class="window-buttons">
+  <button id="files-tab" class="icon-button" title="Fichiers" aria-label="Fichiers"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7h7l2-3h8v16H3Z"/></svg><span id="files-count" hidden>0</span></button>
+  <button id="translation-toggle" class="icon-button" role="switch" aria-checked="false" title="Activer la traduction" aria-label="Traduire le discours"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 5h11M8 3v2m4 0c-1 5-4 8-9 10m2-7c1 3 4 5 7 6m1 6 4-11 4 11m-6-4h4"/></svg></button>
+  <button id="settings-tab" class="icon-button" title="Réglages" aria-label="Réglages"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg></button>
+  <button id="listen" class="icon-button listen" aria-label="Démarrer l’écoute" title="Démarrer l’écoute"><svg class="icon play-icon" aria-hidden="true"><use href="#i-play"/></svg><svg class="icon stop-icon" aria-hidden="true"><use href="#i-stop"/></svg><span class="sr-only">▶ Démarrer</span></button>
+  <span class="divider"></span>
+  <button id="more-toggle" class="icon-button" title="Plus d’options" aria-label="Plus d’options" aria-expanded="false"><svg class="icon " aria-hidden="true"><use href="#i-more"/></svg></button>
+  <button id="close" class="icon-button" title="Quitter et arrêter l’écoute" aria-label="Quitter"><svg class="icon " aria-hidden="true"><use href="#i-close"/></svg></button>
+ </div>
+</header>
+
+<div id="more-menu" class="more-menu glass" hidden>
+ <button id="pin" aria-pressed="true">Toujours au premier plan <span>⌖</span></button>
+ <button id="compact" aria-pressed="false">Vue compacte <span>↔</span></button>
+ <button id="demo">Tester sans API <span>▷</span></button>
+ <button id="export">Exporter la session <span>↗</span></button>
+ <button id="clear">Effacer la session <span>⌫</span></button>
+ <button id="minimize">Réduire la fenêtre <span>−</span></button>
+ <div class="menu-meta"><span id="timer">00:00</span><span id="model-label">GPT-6.1 Sol</span><span id="shortcut">Ctrl ⇧ Espace : écoute</span></div>
+</div>
+<div id="error" class="glass" role="alert" hidden></div>
+<main id="session-panel">
+
+ <button id="notice" class="notice glass">Ajouter ma clé API <span>↗</span></button>
+ <section class="speech-card glass">
+  <div class="card-heading"><span>Discours original</span><select id="transcription-language" class="language-select" aria-label="Langue du discours original" title="Langue du discours original"></select><span id="transcript-state" class="sr-only">EN ATTENTE</span></div>
+  <div id="transcript" class="text-feed placeholder" role="log" aria-label="Discours original" aria-live="off">En attente de parole.</div>
+  <button id="transcript-resume" class="feed-resume text-button" hidden>Reprendre le défilement ↓</button>
+ </section>
+ <section id="translation-card" class="translation-card glass" hidden>
+  <div class="card-heading"><span>Traduction</span><select id="translation-language" class="language-select" aria-label="Langue de traduction" title="Langue de traduction"></select></div>
+  <div id="translation" class="text-feed placeholder" role="log" aria-label="Traduction" aria-live="off">La traduction apparaîtra ici.</div>
+  <button id="translation-resume" class="feed-resume text-button" hidden>Reprendre le défilement ↓</button>
+  <div id="translation-status" class="feed-status" role="status"></div>
+ </section>
+ <section class="answer-card glass">
+  <div class="card-heading answer-toolbar">
+   <span class="answer-label" title="Piste de réponse">Piste</span>
+   <div class="answer-tools">
+    <select id="answer-language" class="language-select" aria-label="Langue des pistes" title="Langue des pistes"></select>
+    <div id="history-controls" class="history-controls" hidden><button id="history-hold" class="icon-button latest-answer" title="Revenir au direct" aria-label="Revenir au direct" hidden>↓<span id="history-unread" hidden></span></button></div>
+    <button id="copy-answer" class="icon-button" title="Copier la réponse" aria-label="Copier la réponse" disabled><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+    <button id="ask" class="icon-button" title="Nouvelle piste" aria-label="Nouvelle piste"><svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg></button>
+   </div>
+  </div>
+  <div id="answer-state" class="sr-only">EN ATTENTE</div>
+  <div id="answer" dir="auto" class="answer-text answer-feed placeholder" role="log" aria-label="Pistes de réponse" aria-live="off">Prêt à vous aider.</div>
+  <details id="answer-details" class="answer-details" hidden><summary>Quelques repères</summary><div id="points" dir="auto" hidden></div><div id="clarification" dir="auto" hidden></div></details>
+  <span id="latency" class="sr-only"></span>
+
+ </section>
+</main>
+<main id="files-panel" class="panel glass" hidden>
+ <div class="panel-heading"><h1>Fichiers</h1><button id="clear-files" class="text-button" disabled>Tout retirer</button></div>
+ <button id="drop-zone" class="drop-zone" aria-label="Ajouter des PDF"><span class="drop-symbol">＋</span><strong>Glissez vos PDF ici</strong><span>ou cliquez pour ajouter</span></button>
+ <input id="file-input" type="file" accept="application/pdf,.pdf" multiple hidden>
+ <p class="file-hint">Pour cet entretien · 5 PDF max</p>
+ <ul id="file-list" class="file-list"></ul><p id="file-result" role="status"></p>
+ <p class="file-hint">Le texte des PDF est utilisé pour les réponses.</p>
+</main>
+<main id="settings-panel" class="panel glass" hidden>
+
+ <section class="key-section"><h2>Clé API</h2>
+ <input id="key" type="password" maxlength="512" autocomplete="off" spellcheck="false" placeholder="sk-…" aria-label="Clé API OpenAI">
+ <div class="key-actions"><button id="save-key">Enregistrer</button><button id="test-key">Vérifier</button><button id="forget-key">Oublier</button></div><p id="key-result" role="status"></p></section>
+ <form id="config-form">
+ <details id="advanced-settings" class="settings-group"><summary>Options</summary>
+ <label>Modèle<select id="model"><option value="gpt-6.1-sol">GPT-6.1 Sol</option><option value="gpt-6-luna">GPT-6 Luna</option><option value="gpt-6-astra">GPT-6 Astra</option></select></label>
+ <label>Réactivité<select id="silenceMs"><option value="350">Rapide</option><option value="650">Équilibrée</option><option value="1000">Patiente</option><option value="1500">Très patiente</option></select></label>
+ </details><button id="save-config" class="secondary full">Enregistrer</button><p id="config-result" role="status"></p></form>
+ <div class="audio-actions"><button id="audio-test" class="text-button">Tester le son</button><button id="mac-permissions" class="text-button" hidden>Autorisations ↗</button></div><p id="audio-result" class="audio-result" role="status" hidden></p>
+</main>
+<script type="module" src="renderer.mjs"></script></body></html>

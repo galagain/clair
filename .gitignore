@@ -1,0 +1,9 @@
+node_modules/
+release/
+build/native/
+.qa-*/
+.DS_Store
+*.log
+.env*
+credentials*
+coverage/
