@@ -16,7 +16,7 @@ Une petite fenêtre pour transcrire une visio, traduire les échanges et propose
 
 Clair écoute le son de l’ordinateur et le micro. La traduction est facultative. Les nouvelles pistes s’ajoutent sous les anciennes ; remonte pour relire et clique sur **↓** pour revenir au direct.
 
-**Coding** : colle un énoncé et du code, ou utilise **Alt ⇧ C** dans Firefox pour les envoyer directement à Clair, sans popup. Analyse, indices, vérification et explications restent dans un historique séparé. [Installer l’extension et l’utiliser](docs/CODING.md).
+**Coding** : colle un énoncé et du code, ou utilise **Alt ⇧ C** dans Firefox pour les envoyer directement à Clair, sans popup. La solution seule s’affiche dans Clair ; chaque nouvel envoi remplace la précédente. [Installer l’extension et l’utiliser](docs/CODING.md).
 
 Les appels API sont facturés sur ton compte OpenAI. Les versions ne sont pas certifiées par Apple ou Microsoft : le système peut demander une autorisation d’ouverture. Clair peut apparaître si tu partages tout ton écran.
 

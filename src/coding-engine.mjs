@@ -7,15 +7,15 @@ export class CodingEngine {
  state(){return {snapshot:this.snapshot,history:this.history.map(item=>({...item})),busy:!!this.active};}
  notify(type,data={}){this.emit({type:'coding-'+type,...data});}
  analyze(value,{action='next',config,key,usage,request,headers}={}){
-  if(this.active)throw Error('Une analyse Coding est déjà en cours. Attendez ou cliquez sur Arrêter.');
   const snapshot=codingSnapshot(value);
-  const sameExercise=this.snapshot?.statement===snapshot.statement&&this.snapshot?.language===snapshot.language;
-  const body=codingBody(config,snapshot,action,sameExercise?this.history.filter(item=>item.state==='done'):[]);
+  const body=codingBody(config,snapshot,action);
   if(!key)throw Error('Ajoutez votre clé API dans Réglages.');
+  // Validate before replacing. New captures cancel the previous stream; late
+  // chunks and errors cannot overwrite the newest solution.
+  this.cancel();
   this.snapshot=snapshot;
   const item={id:++this.sequence,action,language:config.answerLanguage,source:snapshot.source,title:snapshot.title,text:'',state:'streaming'};
-  const entry={item,controller:new AbortController()};this.active=entry;this.history.push(item);
-  if(this.history.length>100)this.history.shift();
+  const entry={item,controller:new AbortController()};this.active=entry;this.history=[item];
   this.notify('start',{item:{...item},snapshot});request?.();
   entry.promise=this.run(entry,{body,key,usage:usage?.(),headers});
   return {id:item.id};

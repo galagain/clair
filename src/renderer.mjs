@@ -133,4 +133,4 @@ document.addEventListener('drop',e=>{e.preventDefault();$('drop-zone').classList
 $('clear-files').onclick=async()=>{try{renderFiles(await api.clearFiles());ui('file-result','');}catch(e){ui('file-result',e.message);}};
 
 installOverlay(api);
-await installCoding(api,{show:()=>showView('coding'),toggle:()=>showView(view==='coding'?'session':'coding'),getConfig:()=>config,preferences});
+await installCoding(api,{show:()=>showView('coding'),toggle:()=>showView(view==='coding'?'session':'coding')});

@@ -1,4 +1,4 @@
-Clair 0.19.3 : **Alt ⇧ C envoie directement l’exercice à Clair**, sans ouvrir le popup Firefox. L’icône de l’extension conserve l’aperçu manuel et les réglages de connexion. Le raccourci ne change ni le focus ni le code dans l’éditeur. Cette extension est aussi compatible avec Clair 0.19.2.
+Clair 0.19.4 : **Coding affiche uniquement la solution**, sans explications ni cartes. Chaque **Alt ⇧ C** remplace la réponse précédente, même si elle est encore en cours de génération. Le code conserve son indentation et peut être copié directement. L’extension Firefox 0.19.3 reste compatible : cette modification nécessite de mettre à jour l’application Clair.
 
 - **Clair-Mac-arm64.dmg** : Mac Apple Silicon, macOS 15 minimum. Glisser Clair dans Applications.
 - **Clair-Windows-x64.exe** : Windows 10/11 64 bits. Ouvrir directement le fichier.
