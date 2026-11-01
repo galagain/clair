@@ -42,10 +42,20 @@ jobs:
         run: npm run qa:mac
       - if: matrix.platform == 'windows'
         run: npm run qa:windows
+      - run: node scripts/qa-coding.cjs --packaged
+      - if: matrix.platform == 'mac'
+        run: npm run dist:firefox
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: clair-${{ matrix.platform }}
           path: ${{ matrix.asset }}
+          if-no-files-found: error
+          retention-days: 7
+      - if: matrix.platform == 'mac'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: clair-firefox
+          path: release/Clair-Firefox.zip
           if-no-files-found: error
           retention-days: 7
   release:
@@ -61,7 +71,7 @@ jobs:
           merge-multiple: true
       - name: Checksums
         working-directory: artifacts
-        run: sha256sum Clair-Mac-arm64.dmg Clair-Windows-x64.exe > SHA256SUMS.txt
+        run: sha256sum Clair-Mac-arm64.dmg Clair-Windows-x64.exe Clair-Firefox.zip > SHA256SUMS.txt
       - name: Publish downloads
         env:
           GH_TOKEN: ${{ github.token }}

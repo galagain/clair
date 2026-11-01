@@ -1,6 +1,6 @@
 {
   "name": "clair-desktop",
-  "version": "0.18.1",
+  "version": "0.19.0",
   "private": true,
   "description": "Transcription et assistance aux entretiens en visio",
   "author": "Clair",
@@ -18,7 +18,10 @@
     "qa:mac": "node scripts/qa-mac.cjs",
     "build:native": "node scripts/build-native.cjs",
     "qa:windows": "node scripts/qa-windows.cjs",
-    "verify:package": "node scripts/verify-package.cjs"
+    "verify:package": "node scripts/verify-package.cjs",
+    "dist:firefox": "node scripts/package-firefox.cjs",
+    "qa:coding": "node scripts/qa-coding.cjs",
+    "qa:firefox": "node scripts/qa-firefox.cjs"
   },
   "dependencies": {
     "pdf-parse": "2.4.5",
@@ -74,7 +77,13 @@
     },
     "afterPack": "scripts/sign-mac.cjs",
     "beforePack": "scripts/build-native.cjs",
-    "npmRebuild": false
+    "npmRebuild": false,
+    "extraResources": [
+      {
+        "from": "extensions/firefox",
+        "to": "firefox-extension"
+      }
+    ]
   },
   "engines": {
     "node": ">=22.12.0"

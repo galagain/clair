@@ -1,7 +1,7 @@
 // Native mouse routing. Screen polling also restores controls when Chromium
 // receives no movement because the pointer arrived from another application.
 function contains(rect,x,y){return x>=rect.x&&y>=rect.y&&x<rect.x+rect.width&&y<rect.y+rect.height;}
-function validLayout(value){return value&&['session','files','settings'].includes(value.view)&&Number.isFinite(value.height)&&value.height>=0&&value.height<=100000&&Array.isArray(value.regions)&&value.regions.length<=200&&value.regions.every(r=>r&&['x','y','width','height'].every(k=>Number.isFinite(r[k]))&&r.width>=0&&r.height>=0&&Math.abs(r.x)<100000&&Math.abs(r.y)<100000&&r.width<100000&&r.height<100000);}
+function validLayout(value){return value&&['session','files','settings','coding'].includes(value.view)&&Number.isFinite(value.height)&&value.height>=0&&value.height<=100000&&Array.isArray(value.regions)&&value.regions.length<=200&&value.regions.every(r=>r&&['x','y','width','height'].every(k=>Number.isFinite(r[k]))&&r.width>=0&&r.height>=0&&Math.abs(r.x)<100000&&Math.abs(r.y)<100000&&r.width<100000&&r.height<100000);}
 class WindowOverlay {
  constructor(win,screen){
   this.win=win;this.screen=screen;this.regions=null;this.ignored=null;this.manualSize=false;this.compact=false;this.held=false;this.view='session';this.height=null;

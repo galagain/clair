@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Clair Coding</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+ <header><strong>clair<span>.</span> <small>Coding</small></strong><button id="refresh" title="Relire cette page">↻</button></header>
+ <details id="connection"><summary>Connexion à Clair</summary><p>Dans Clair → Coding → Firefox, copiez le code de connexion.</p><div class="row"><input id="pairing" type="password" placeholder="Code de connexion" autocomplete="off" aria-label="Code de connexion à Clair"><button id="connect">Connecter</button></div><button id="forget" class="plain">Déconnecter</button></details>
+ <p id="status" role="status">Lecture de la page…</p>
+ <form id="capture">
+  <div class="row"><span id="source"></span><select id="language" aria-label="Langage de programmation"><option value="python">Python</option><option value="cpp">C++</option></select></div>
+  <label>Énoncé<textarea id="statement" rows="5" maxlength="24000" placeholder="Sélectionnez l’énoncé dans la page, ou collez-le ici."></textarea></label>
+  <select id="editor" aria-label="Éditeur à transmettre" hidden></select>
+  <label>Code<textarea id="code" rows="7" maxlength="32000" spellcheck="false" placeholder="Collez le code si l’éditeur est inaccessible."></textarea></label>
+  <details><summary>Sorties des tests</summary><textarea id="tests" rows="3" maxlength="8000" aria-label="Sorties des tests" spellcheck="false"></textarea></details>
+  <p id="warning"></p>
+  <p class="privacy">Ce contenu sera envoyé à OpenAI par Clair. Aucun envoi avant votre clic.</p>
+  <button id="send" class="primary" type="submit">Envoyer et analyser</button>
+ </form>
+ <script type="module" src="popup.mjs"></script>
+</body></html>

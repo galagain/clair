@@ -5,6 +5,7 @@ import {AnswerHistory} from './answer-history.mjs';
 import {AnswerFeed} from './answer-feed.mjs';
 import {TextFeed} from './text-feed.mjs';
 import {AudioCapture} from './capture.mjs';
+import {installCoding} from './coding-view.mjs';
 const api=window.clair,$=id=>document.getElementById(id);let config,hasKey=false,running=false,starting=false,diagnostic=false,diagnosticTimer=null,signalSeen=false,clock=null,elapsed=0,listenEpoch=0,answerId=null,compact=false,testing=false,demoTimer=null,lastSignal=0,silenceWarning=null,audioStatus='Audio automatique · ordinateur + micro',diagnosticSources={system:false,mic:false};
 const capture=new AudioCapture({mediaDevices:navigator.mediaDevices,AudioContextImpl:AudioContext,WorkletImpl:AudioWorkletNode});
 const fields=['model','silenceMs'];
@@ -25,7 +26,7 @@ $('translation-toggle').onclick=()=>preferences({translationEnabled:!config.tran
 $('translation-language').onchange=e=>preferences({translationLanguage:e.target.value});
 $('answer-language').onchange=e=>preferences({answerLanguage:e.target.value});
 $('transcription-language').onchange=e=>preferences({transcriptionLanguage:e.target.value});
-function showView(next){view=next;for(const name of ['session','settings','files']){$(name+'-panel').hidden=name!==next;$(name+'-tab').classList.toggle('selected',name===next);if(name===next)$(name+'-tab').setAttribute('aria-current','page');else $(name+'-tab').removeAttribute('aria-current');}document.body.classList.toggle('settings-open',next!=='session');closeMenu();window.scrollTo(0,0);}
+function showView(next){view=next;for(const name of ['session','settings','files','coding']){$(name+'-panel').hidden=name!==next;$(name+'-tab').classList.toggle('selected',name===next);if(name===next)$(name+'-tab').setAttribute('aria-current','page');else $(name+'-tab').removeAttribute('aria-current');}document.body.classList.toggle('settings-open',next!=='session');closeMenu();window.scrollTo(0,0);}
 function settings(open){showView(open?'settings':'session');}
 function closeMenu(){$('more-menu').hidden=true;$('more-toggle').setAttribute('aria-expanded','false');}
 function fill(c){config=c;$('opacity').value=c.opacity;$('opacity').title='Opacité : '+Math.round(c.opacity*100)+' %';preferenceView();capture.native=c.nativeAudio?{start:id=>api.systemStart(id),stop:id=>api.systemStop(id),subscribe:fn=>api.onEvent(fn)}:null;hasKey=c.hasKey??hasKey;for(const key of fields){const el=$(key);if(el.type==='checkbox')el.checked=c[key];else el.value=String(c[key]);}$('pin').classList.toggle('active',c.alwaysOnTop);$('pin').setAttribute('aria-pressed',String(c.alwaysOnTop));$('model-label').textContent=c.model.replace('gpt-','GPT-').replace('-sol',' Sol').replace('-luna',' Luna').replace('-astra',' Astra');$('notice').hidden=hasKey;$('key').placeholder=hasKey?t('Clé enregistrée'):'sk-…';ui('shortcut','{shortcut} : écoute',{shortcut:'Ctrl ⇧ Espace'});if(c.platform==='darwin'){ui('shortcut','{shortcut} : écoute',{shortcut:'⌘ ⇧ Espace'});$('mac-permissions').hidden=false;}}
@@ -132,3 +133,4 @@ document.addEventListener('drop',e=>{e.preventDefault();$('drop-zone').classList
 $('clear-files').onclick=async()=>{try{renderFiles(await api.clearFiles());ui('file-result','');}catch(e){ui('file-result',e.message);}};
 
 installOverlay(api);
+await installCoding(api,{show:()=>showView('coding'),toggle:()=>showView(view==='coding'?'session':'coding'),getConfig:()=>config,preferences});

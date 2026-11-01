@@ -6,6 +6,7 @@ Une petite fenêtre pour transcrire une visio, traduire les échanges et propose
 
 - **[Mac Apple Silicon (M1 et suivants)](https://github.com/galagain/clair/releases/latest/download/Clair-Mac-arm64.dmg)** — macOS 15 ou plus récent.
 - **[Windows 64 bits](https://github.com/galagain/clair/releases/latest/download/Clair-Windows-x64.exe)** — Windows 10 ou 11, sans installation.
+- **[Extension Firefox](https://github.com/galagain/clair/releases/latest/download/Clair-Firefox.zip)** — chargement temporaire, [installation](docs/CODING.md).
 
 ## Utiliser
 
@@ -14,6 +15,8 @@ Une petite fenêtre pour transcrire une visio, traduire les échanges et propose
 3. Choisis la langue du discours et des réponses, puis clique sur **▶**.
 
 Clair écoute le son de l’ordinateur et le micro. La traduction est facultative. Les nouvelles pistes s’ajoutent sous les anciennes ; remonte pour relire et clique sur **↓** pour revenir au direct.
+
+**Coding** : colle un énoncé et du code, ou utilise l’extension Firefox pour les envoyer à Clair. Analyse, indices, vérification et explications restent dans un historique séparé. [Installer l’extension et l’utiliser](docs/CODING.md).
 
 Les appels API sont facturés sur ton compte OpenAI. Les versions ne sont pas certifiées par Apple ou Microsoft : le système peut demander une autorisation d’ouverture. Clair peut apparaître si tu partages tout ton écran.
 

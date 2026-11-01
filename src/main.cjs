@@ -7,9 +7,10 @@ const {WindowOverlay}=require('./window-overlay.cjs');
 const {NativeSystemAudio}=require('./native-audio.cjs');
 const {DocumentContext,extractPDF}=require('./documents.cjs');
 const {extractPortablePDF}=require('./pdf-portable.cjs');
+const {CodingBridge}=require('./coding-bridge.cjs');
 const documents=new DocumentContext({extract:(bytes,options)=>process.platform!=='darwin'?extractPortablePDF(bytes,options):extractPDF(app.isPackaged?path.join(process.resourcesPath,'native','clair-pdf-text'):path.join(__dirname,'../build/native',process.arch,'clair-pdf-text'),bytes,options),onChange:files=>{engine?.setDocuments(files);send({type:'files-changed',files:documents.list()});}});
 const nativeAudio=new NativeSystemAudio({executable:app.isPackaged?path.join(process.resourcesPath,'native','clair-system-audio'):path.join(__dirname,'../build/native',process.arch,'clair-system-audio'),emit:send});
-let win,overlay,engine,config,key='',storedKeys=false,captureAllowed=false,mod;
+let win,overlay,engine,coding,bridge,config,key='',storedKeys=false,captureAllowed=false,mod;
 // Explicit isolated profile for native QA; never read the user's keys in tests.
 if(app.commandLine.hasSwitch('user-data-dir'))app.setPath('userData',path.resolve(app.commandLine.getSwitchValue('user-data-dir')));
 const indexURL=pathToFileURL(path.join(__dirname,'index.html')).href;
@@ -29,8 +30,11 @@ async function setup(){
  await atomic(storageFile(),config);
  try{const saved=JSON.parse(await fs.readFile(keyFile(),'utf8'));if(await canEncrypt()){key=await decrypt(Buffer.from(saved.key,'base64'));storedKeys=true;if(saved.audioKey)await atomic(keyFile(),{key:saved.key});}}catch{/* A keychain failure never downgrades to plaintext. */}
  engine=new InterviewEngine({WebSocketImpl:WebSocket,emit:e=>{if(e.type==='stopped'&&!e.reset){captureAllowed=false;nativeAudio.stop();}send(e);}});engine.configure(config);engine.credentials({key});
+ const {CodingEngine}=await import('./coding-engine.mjs');coding=new CodingEngine({emit:send});
+ const analyzeCoding=(snapshot,action='next')=>coding.analyze(snapshot,{action,config,key,usage:()=>engine.tokens.begin(),request:()=>engine.request(),headers:(headers,model)=>engine.tokens.headers(headers,model)});
+ bridge=new CodingBridge({receive:snapshot=>analyzeCoding(snapshot)});
  const area=screen.getPrimaryDisplay().workArea;win=new BrowserWindow({title:'Clair — Assistant d’entretien',width:400,height:300,minWidth:340,minHeight:180,x:Math.max(area.x,area.x+area.width-420),y:area.y+30,frame:false,acceptFirstMouse:true,transparent:true,hasShadow:false,backgroundColor:'#00000000',show:false,alwaysOnTop:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true,backgroundThrottling:false}});overlay=new WindowOverlay(win,screen);Menu.setApplicationMenu(process.platform==='darwin'?Menu.buildFromTemplate([{role:'appMenu'},{role:'editMenu'},{role:'windowMenu'}]):null);syncWindow();if(process.platform==='darwin')win.setVisibleOnAllWorkspaces(true,{visibleOnFullScreen:true});
- win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-navigate',(e,url)=>{if(url!==indexURL)e.preventDefault()});win.webContents.on('render-process-gone',()=>{overlay.reset();engine.stop();});win.webContents.on('did-start-loading',()=>{overlay.reset();captureAllowed=false;engine.stop();});
+ win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-navigate',(e,url)=>{if(url!==indexURL)e.preventDefault()});win.webContents.on('render-process-gone',()=>{overlay.reset();engine.stop();coding.cancel();});win.webContents.on('did-start-loading',()=>{overlay.reset();captureAllowed=false;engine.stop();coding.cancel();});
  session.defaultSession.setPermissionRequestHandler((wc,permission,callback)=>callback(wc===win.webContents&&captureAllowed&&['media','display-capture'].includes(permission)));
  session.defaultSession.setPermissionCheckHandler((wc,permission)=>wc===win.webContents&&captureAllowed&&['media','display-capture'].includes(permission));
  session.defaultSession.setDisplayMediaRequestHandler(async(request,callback)=>{if(process.platform==='darwin'){callback({});return;}if(!captureAllowed||request.frame?.url!==indexURL){callback({});return;}try{const sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:{width:0,height:0}});if(!sources.length||!captureAllowed){callback({});return;}callback({video:sources[0],audio:'loopback'});}catch{callback({});}},{useSystemPicker:false});
@@ -41,10 +45,17 @@ async function setup(){
   if(engine.running)throw Error('Arrêtez l’écoute.');const next=String(value?.key||'').trim();
   if(!next.startsWith('sk-')||next.length<20||next.length>512)throw Error('Clé invalide.');
   if(!await canEncrypt())throw Error('Chiffrement indisponible. Clé non enregistrée.');
-  await atomic(keyFile(),{key:(await encrypt(next)).toString('base64')});key=next;storedKeys=true;engine.credentials({key});return {hasKey:true,storedKeys};
+  await atomic(keyFile(),{key:(await encrypt(next)).toString('base64')});coding.cancel();key=next;storedKeys=true;engine.credentials({key});return {hasKey:true,storedKeys};
  });
- guard('keys:forget',async()=>{engine.stop();key='';storedKeys=false;engine.credentials({key});await fs.rm(keyFile(),{force:true});});
+ guard('keys:forget',async()=>{engine.stop();coding.cancel();key='';storedKeys=false;engine.credentials({key});await fs.rm(keyFile(),{force:true});});
  guard('api:test',candidate=>engine.testConnection(String(candidate||'').trim()||key));
+ guard('coding:state',()=>coding.state());
+ guard('coding:analyze',(snapshot,action)=>analyzeCoding(snapshot,action));
+ guard('coding:cancel',()=>coding.cancel());
+ guard('coding:clear',()=>coding.clear());
+ guard('coding:pair',async()=>{clipboard.writeText(await bridge.start());return true;});
+ guard('coding:disconnect',()=>bridge.close());
+ guard('coding:extension',async()=>{const location=app.isPackaged?path.join(process.resourcesPath,'firefox-extension'):path.join(__dirname,'../extensions/firefox');const error=await shell.openPath(location);if(error)throw Error('Impossible d’ouvrir le dossier de l’extension.');});
  guard('files:list',()=>documents.list());
  guard('files:add',file=>documents.add(file));
  guard('files:remove',id=>documents.remove(id));
@@ -62,9 +73,9 @@ async function setup(){
  guard('permissions:open',()=>{if(process.platform==='darwin')return shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture');});
  guard('session:start',async()=>{const r=await engine.start();captureAllowed=true;return r;});
  guard('session:stop',()=>{captureAllowed=false;engine.stop();});
- guard('session:clear',()=>{documents.clear();engine.clear();});
+ guard('session:clear',()=>{documents.clear();coding.clear();engine.clear();});
  guard('session:ask',text=>{engine.manual(String(text||'').slice(0,8000));});
- guard('session:export',async()=>{const {filePath,canceled}=await dialog.showSaveDialog(win,{title:'Exporter la session',defaultPath:'Clair-session.txt',filters:[{name:'Texte',extensions:['txt']}]});if(canceled||!filePath)return false;await fs.writeFile(filePath,engine.exportText(),'utf8');return true;});
+ guard('session:export',async()=>{const {filePath,canceled}=await dialog.showSaveDialog(win,{title:'Exporter la session',defaultPath:'Clair-session.txt',filters:[{name:'Texte',extensions:['txt']}]});if(canceled||!filePath)return false;await fs.writeFile(filePath,engine.exportText()+coding.exportText(),'utf8');return true;});
  guard('window:pin',async()=>{config.alwaysOnTop=!config.alwaysOnTop;syncWindow();await atomic(storageFile(),config);return config.alwaysOnTop;});
  guard('window:opacity',async(value,save=false)=>{if(!Number.isFinite(value))throw Error('Opacité invalide.');config.opacity=Math.max(.35,Math.min(1,value));win.setOpacity(config.opacity);if(save===true)await atomic(storageFile(),config);return config.opacity;});
  guard('window:compact',compact=>{overlay.preset(compact);return true;});
@@ -75,8 +86,8 @@ async function setup(){
  guard('window:minimize',()=>win.minimize());guard('window:close',()=>win.close());
  ipcMain.on('audio:chunk',(e,data,levels)=>{if(trusted(e)&&data instanceof ArrayBuffer&&data.byteLength<=48000){const valid=levels&&[levels.systemRms,levels.micRms].every(v=>Number.isFinite(v)&&v>=0&&v<=2);engine.audio(new Uint8Array(data),valid?levels:undefined);}});
  globalShortcut.register('CommandOrControl+Shift+Space',()=>send({type:'shortcut-toggle'}));globalShortcut.register('CommandOrControl+Shift+Enter',()=>engine.manual(''));
- win.on('close',()=>engine.stop());powerMonitor.on('suspend',()=>{engine.stop();send({type:'status',text:'Écoute arrêtée à la mise en veille.'})});
+ win.on('close',()=>{engine.stop();coding.cancel();});powerMonitor.on('suspend',()=>{engine.stop();coding.cancel();send({type:'status',text:'Écoute arrêtée à la mise en veille.'})});
  win.once('ready-to-show',()=>win.show());await win.loadFile(path.join(__dirname,'index.html'));
 }
 if(!app.requestSingleInstanceLock())app.quit();else{app.on('second-instance',()=>{if(win){if(win.isMinimized())win.restore();win.focus()}});app.whenReady().then(setup).catch(()=>{dialog.showErrorBox('Clair','Impossible de démarrer Clair. Vérifiez les fichiers de l’application et les permissions locales.');app.quit()});}
-app.on('window-all-closed',()=>app.quit());app.on('will-quit',()=>{documents.clear();nativeAudio.shutdown();engine?.stop();globalShortcut.unregisterAll()});
+app.on('window-all-closed',()=>app.quit());app.on('will-quit',()=>{documents.clear();nativeAudio.shutdown();engine?.stop();coding?.cancel();void bridge?.close();globalShortcut.unregisterAll()});

@@ -6,7 +6,7 @@ export function installOverlay(api){
   queued=false;const regions=[];
   function add(rect){const x=Math.max(0,rect.left),y=Math.max(0,rect.top),right=Math.min(innerWidth,rect.right),bottom=Math.min(innerHeight,rect.bottom);if(right>x&&bottom>y)regions.push({x,y,width:right-x,height:bottom-y});}
   // Panels remain usable for typing, native menus, scrolling and PDF dropping.
-  for(const el of document.querySelectorAll('.titlebar,#files-panel,#settings-panel,#more-menu,button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),summary'))if(visible(el)){
+  for(const el of document.querySelectorAll('.titlebar,#files-panel,#settings-panel,#coding-panel,#more-menu,button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),summary'))if(visible(el)){
    const rect=el.getBoundingClientRect(),feed=el.closest('.answer-feed');
    if(feed){const clip=feed.getBoundingClientRect();add({left:Math.max(rect.left,clip.left),right:Math.min(rect.right,clip.right),top:Math.max(rect.top,clip.top),bottom:Math.min(rect.bottom,clip.bottom)});}else add(rect);
   }
@@ -14,7 +14,7 @@ export function installOverlay(api){
   for(const el of document.querySelectorAll('.text-feed,.answer-feed'))if(visible(el)&&el.scrollHeight>el.clientHeight){const r=el.getBoundingClientRect();add({left:r.right-10,right:r.right,top:r.top,bottom:r.bottom});}
   // Keep the page scrollbar reachable if a manually sized window is too short.
   if(document.documentElement.scrollHeight>innerHeight)add({left:innerWidth-7,right:innerWidth,top:52,bottom:innerHeight-10});
-  const view=['session','files','settings'].find(name=>!document.getElementById(name+'-panel').hidden)||'session';
+  const view=['session','files','settings','coding'].find(name=>!document.getElementById(name+'-panel').hidden)||'session';
   const panel=document.getElementById(view+'-panel'),padding=parseFloat(getComputedStyle(document.body).paddingBottom)||0;
   const height=Math.ceil(panel.getBoundingClientRect().bottom+scrollY+padding);
   const value={regions,view,height},encoded=JSON.stringify(value);

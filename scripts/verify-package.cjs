@@ -8,9 +8,11 @@ const source=JSON.parse(fs.readFileSync('package.json'));
 delete source.build;delete source.scripts;delete source.devDependencies;
 assert.deepEqual(JSON.parse(asar.extractFile(archive,'package.json')),source);
 console.log('All packaged src files and runtime package metadata match the delivered sources.');
+const path=require('node:path');
+for(const name of fs.readdirSync('extensions/firefox'))assert.deepEqual(fs.readFileSync(path.join(path.dirname(archive),'firefox-extension',name)),fs.readFileSync('extensions/firefox/'+name),name);
+console.log('Bundled Firefox extension matches the sources.');
 
 if(archive.includes('Clair.app')){
- const path=require('node:path');
  for(const name of ['clair-system-audio','clair-pdf-text']){
   assert.deepEqual(fs.readFileSync(path.join(path.dirname(archive),'native',name)),fs.readFileSync('build/native/'+process.arch+'/'+name));
  }
