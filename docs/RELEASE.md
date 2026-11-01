@@ -1,4 +1,4 @@
-Clair 0.19.4 : **Coding affiche uniquement la solution**, sans explications ni cartes. Chaque **Alt ⇧ C** remplace la réponse précédente, même si elle est encore en cours de génération. Le code conserve son indentation et peut être copié directement. L’extension Firefox 0.19.3 reste compatible : cette modification nécessite de mettre à jour l’application Clair.
+Clair 0.19.5 : **Coding affiche uniquement la solution**, sans explications ni cartes. Chaque **Alt ⇧ C** remplace la réponse précédente, même si elle est encore en cours de génération. Le code conserve son indentation et peut être copié directement. L’extension Firefox 0.19.3 reste compatible : cette modification nécessite de mettre à jour l’application Clair.
 
 - **Clair-Mac-arm64.dmg** : Mac Apple Silicon, macOS 15 minimum. Glisser Clair dans Applications.
 - **Clair-Windows-x64.exe** : Windows 10/11 64 bits. Ouvrir directement le fichier.

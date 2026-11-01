@@ -180,7 +180,7 @@ const os=require('node:os');
   const initialRequests=await app.evaluate(()=>global.qaRequests);assert.equal(initialRequests.filter(x=>x.instructions.startsWith('Traduis')).length,1);
   await page.locator('#translation-language').selectOption('de');await page.waitForFunction(async()=>(await window.clair.config()).translationLanguage==='de');await page.waitForFunction(()=>document.querySelector('#translation .feed-text')?.textContent==='Traduction de test.');
   assert.equal((await page.evaluate(()=>window.clair.config())).translationLanguage,'de');
-  await page.locator('#answer-language').selectOption('fr');await page.waitForFunction(async()=>(await window.clair.config()).answerLanguage==='fr');await page.waitForFunction(()=>document.querySelector('#answer-state').textContent==='À ADAPTER');
+  await page.locator('#answer-language').selectOption('fr');await page.waitForFunction(()=>!document.querySelector('#answer-language').disabled&&document.querySelector('#answer-language').value==='fr');await page.waitForFunction(()=>document.querySelector('#answer-state').textContent==='À ADAPTER');
   assert.ok((await app.evaluate(()=>global.qaRequests)).some(x=>x.instructions.includes('Langue imposée pour la piste et ses détails : Français')));
   await page.screenshot({path:'release/qa/clair-mac-languages.png',omitBackground:true});
   await page.locator('#settings-tab').click();await page.locator('#translation-toggle').click();await page.waitForFunction(()=>document.querySelector('#translation-toggle').getAttribute('aria-checked')==='false');
