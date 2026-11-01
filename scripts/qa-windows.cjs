@@ -25,11 +25,13 @@ const pdfFixture=require('../test/pdf-fixture.cjs');
   await page.evaluate(()=>{
    window.qaSignals=[];
    const signal=async frequency=>{const ctx=new AudioContext({sampleRate:48000}),oscillator=ctx.createOscillator(),gain=ctx.createGain(),dest=ctx.createMediaStreamDestination();gain.gain.value=.15;oscillator.frequency.value=frequency;oscillator.connect(gain);gain.connect(dest);oscillator.start();await ctx.resume();window.qaSignals.push({ctx,oscillator,stream:dest.stream});return dest.stream;};
-   navigator.mediaDevices.getDisplayMedia=()=>signal(440);
+   window.qaSystemAttempts=0;
+   navigator.mediaDevices.getDisplayMedia=()=>{if(++window.qaSystemAttempts<3)return Promise.reject(new DOMException('Could not start audio source','NotReadableError'));return signal(440);};
    navigator.mediaDevices.getUserMedia=()=>signal(220);
   });
   await page.locator('#settings-tab').click();await page.locator('#audio-test').click();
   await page.waitForFunction(()=>document.body.dataset.sessionStatus?.includes('Ordinateur ✓ · Micro ✓'));
+  assert.equal(await page.evaluate(()=>window.qaSystemAttempts),3);
   await page.locator('#listen').click();
   assert.equal(await page.evaluate(()=>window.qaSignals.every(s=>s.stream.getTracks().every(t=>t.readyState==='ended'))),true);
   await page.evaluate(async()=>{for(const s of window.qaSignals){s.oscillator.stop();await s.ctx.close();}});
@@ -38,5 +40,5 @@ const pdfFixture=require('../test/pdf-fixture.cjs');
   await page.locator('#opacity-toggle').click();assert.equal(await page.locator('#opacity').isVisible(),false);
   assert.deepEqual(errors,[]);
   console.log('Windows packaged QA passed: startup, demo, PDF extraction with accents and deduplication, settings, synthetic two-source AudioWorklet mix, stop and opacity toggle. No real API, microphone or system capture used.');
- }finally{await app.close();await fs.rm(profile,{recursive:true,force:true});}
+ }finally{await app.close();await fs.rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:200});}
 })().catch(error=>{console.error(error);process.exitCode=1;});

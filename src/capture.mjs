@@ -1,7 +1,24 @@
 // Each attempt owns its resources, including when macOS answers a picker late.
 export class AudioCapture {
- constructor({mediaDevices,AudioContextImpl,WorkletImpl,native=null}) {
-  this.native=native;this.devices=mediaDevices;this.Context=AudioContextImpl;this.Worklet=WorkletImpl;this.current=null;
+ constructor({mediaDevices,AudioContextImpl,WorkletImpl,native=null,platform}) {
+  this.native=native;this.platform=platform;this.devices=mediaDevices;this.Context=AudioContextImpl;this.Worklet=WorkletImpl;this.current=null;
+ }
+ async systemStream(attempt,onStatus=()=>{}) {
+  // Windows audio endpoints can be temporarily unavailable while the audio
+  // service starts or the default output changes. Never retry a permission denial.
+  const delays=this.platform==='win32'?[350,1000]:[];
+  for(let retry=0;;retry++){
+   if(this.current!==attempt)return null;
+   try{return await this.devices.getDisplayMedia({audio:true,systemAudio:'include',video:{width:320,height:180,frameRate:1}});}
+   catch(error){
+    if(this.current!==attempt)return null;
+    if(error.name!=='NotReadableError'||this.platform!=='win32')throw error;
+    if(retry>=delays.length)throw new Error('Impossible de démarrer le son de l’ordinateur. Dans Paramètres Windows → Système → Son, vérifiez la sortie audio par défaut. Fermez puis rouvrez Clair ; si le problème persiste, essayez une autre sortie ou désactivez ses améliorations audio.',{cause:error});
+    onStatus('Sortie audio temporairement indisponible · nouvelle tentative…');
+    await new Promise(resolve=>{attempt.retryResolve=resolve;attempt.retryTimer=setTimeout(resolve,delays[retry]);});
+    attempt.retryResolve=null;
+   }
+  }
  }
  async open(source,callbacks) {
   if(source==='auto')return this.openAutomatic(callbacks);
@@ -10,7 +27,7 @@ export class AudioCapture {
   const valid=()=>this.current===attempt;
   try {
    const stream=source==='system'
-    ?await this.devices.getDisplayMedia({audio:true,systemAudio:'include',video:{width:320,height:180,frameRate:1}})
+    ?await this.systemStream(attempt,callbacks.onStatus)
     :await this.devices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:true,autoGainControl:true}});
    attempt.stream=stream;
    if(!valid()){this.release(attempt);return false;}
@@ -52,8 +69,8 @@ export class AudioCapture {
     });
     await this.native.start(attempt.id);if(!valid())return false;
    }else{
-    const stream=await this.devices.getDisplayMedia({audio:true,systemAudio:'include',video:{width:320,height:180,frameRate:1}});
-    if(!valid()){stream.getTracks().forEach(t=>t.stop());return false;}
+    const stream=await this.systemStream(attempt,onStatus);
+    if(!valid()){stream?.getTracks().forEach(t=>t.stop());return false;}
     attempt.stream=stream;const tracks=stream.getAudioTracks();
     if(!tracks.length||tracks.some(t=>t.readyState==='ended'))throw Error('Autorisez le son système dans les réglages de confidentialité.');
     stream.getVideoTracks().forEach(t=>{t.enabled=false;});
@@ -82,6 +99,7 @@ export class AudioCapture {
   }catch(error){if(!valid())return false;this.stop();throw error;}
  }
  release(attempt){
+  clearTimeout(attempt.retryTimer);attempt.retryResolve?.();attempt.retryResolve=null;
   clearTimeout(attempt.deviceTimer);
   if(attempt.deviceChange)this.devices.removeEventListener?.('devicechange',attempt.deviceChange);
   attempt.unsubscribe?.();if(attempt.native)void attempt.native.stop(attempt.id).catch(()=>{});

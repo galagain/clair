@@ -12,6 +12,8 @@ La capture d’une vraie visio, les permissions audio, les casques et la pertine
 
 CoderPad réel, les éditeurs intégrés dans des cadres d’une autre origine, Firefox sous Windows et la qualité des aides Coding avec un vrai modèle restent à valider. L’extension n’est pas signée par Mozilla ; elle est rechargeable temporairement. Aucun code n’est exécuté ni soumis.
 
+Sous Windows, une erreur transitoire d’ouverture du son système (`NotReadableError`, notamment « Could not start audio source ») déclenche deux nouvelles tentatives après 350 ms et 1 s. Arrêter l’écoute annule cette reprise. Un refus d’autorisation n’est jamais relancé automatiquement. Si l’échec persiste, Clair indique de vérifier la sortie audio par défaut, de rouvrir l’application puis, si nécessaire, d’essayer une autre sortie ou de désactiver ses améliorations audio. Les blocages de pilote, de confidentialité ou de sécurité restent à résoudre dans Windows ; cette reprise ne garantit pas leur disparition.
+
 Le son système regroupe les applications : Clair ne sépare pas plusieurs participants distants. L’attribution micro/système reste approximative en cas d’écho ou de chevauchement. Le discours et les pistes sont en anglais par défaut, modifiables manuellement.
 
 Les PDF sans texte (scans) ou protégés par mot de passe ne sont pas pris en charge. Limites : 5 fichiers, 10 Mo et 80 pages par fichier, 60 000 caractères au total. Aucun audio n’est sauvegardé. Le texte des PDF utilisés en contexte est envoyé à OpenAI avec la demande ; les requêtes Responses utilisent `store:false`.

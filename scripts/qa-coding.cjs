@@ -73,5 +73,5 @@ const os=require('node:os');
   await page.evaluate(()=>window.clair.codingDisconnect());
   await assert.rejects(fetch(`http://127.0.0.1:${port}/v1/status`));
   assert.deepEqual(errors,[]);console.log('Coding QA passed: isolated app, stream, history, bridge, copy, tabs and narrow layout.');
- }finally{await app.close();await fs.rm(profile,{recursive:true,force:true});}
+ }finally{await app.close();await fs.rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:200});}
 })().catch(error=>{console.error(error);process.exitCode=1;});
