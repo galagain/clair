@@ -5,6 +5,7 @@
 - Windows : démarrage de l’application empaquetée, démonstration, import PDF réel et mixage système/micro synthétique.
 - Les sources embarquées sont comparées au dépôt avant publication.
 - Les tests ne font aucun appel OpenAI réel et ne lisent aucune clé personnelle.
+- Le lecteur PDF portable s’exécute dans un processus enfant avec délai maximal et annulation : un plantage de son composant natif ne doit plus fermer l’application.
 - Coding : entrées bornées, connexion locale authentifiée, rejet des origines web, streaming, annulation, conservation des cartes et navigation testés. L’interface empaquetée conserve la taille de fenêtre et accepte les captures reçues.
 - Firefox 159 sur Mac : extension temporaire testée dans un profil isolé, permission `activeTab`, sélection d’énoncé, modèle d’éditeur synthétique complet, avertissement sur le code partiel, connexion, envoi explicite et déconnexion. Le contrôle Mozilla `web-ext lint` passe sans erreur ni avertissement.
 

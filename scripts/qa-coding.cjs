@@ -33,6 +33,9 @@ const os=require('node:os');
     return original.call(this,entry,args);
    };
   });
+  // Test a user-sized window, after startup's asynchronous content fit.
+  await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].setSize(400,520));
+  await page.waitForFunction(()=>innerHeight===520);
   const bounds=await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].getBounds());
   await page.locator('#coding-tab').click();assert.equal(await page.locator('#coding-panel').isVisible(),true);
   assert.deepEqual(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].getBounds()),bounds);
