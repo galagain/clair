@@ -64,15 +64,15 @@
  <details id="coding-browser" class="coding-browser"><summary>Firefox</summary>
   <div class="button-row"><button id="coding-extension" class="text-button">Ouvrir l’extension</button><button id="coding-pair" class="text-button">Copier le code</button><button id="coding-disconnect" class="text-button">Déconnecter</button></div>
   <p class="file-hint">Firefox → about:debugging → Ce Firefox → Charger un module temporaire → manifest.json. Collez ensuite le code de connexion dans l’extension.</p>
-  <p class="file-hint">Alt ⇧ C prépare l’envoi. À reconnecter après la fermeture de Clair ; à recharger après celle de Firefox.</p>
+  <p class="file-hint">Alt ⇧ C envoie directement à Clair, sans popup Firefox. À reconnecter après la fermeture de Clair ; à recharger après celle de Firefox.</p>
   <p id="coding-connection" class="feed-status" role="status"></p>
  </details>
  <details id="coding-input" open><summary>Énoncé & code <span id="coding-source"></span></summary>
   <label class="sr-only" for="coding-statement">Énoncé</label><textarea id="coding-statement" rows="3" maxlength="24000" placeholder="Énoncé · depuis Firefox ou à coller ici"></textarea>
   <label class="sr-only" for="coding-code">Code</label><textarea id="coding-code" rows="4" maxlength="32000" placeholder="Votre code" spellcheck="false"></textarea>
   <details class="coding-tests"><summary>Sorties des tests</summary><textarea id="coding-tests" rows="2" maxlength="8000" aria-label="Sorties des tests" spellcheck="false"></textarea></details>
-  <p id="coding-warning" class="file-hint"></p>
  </details>
+ <p id="coding-warning" class="file-hint"></p>
  <div class="coding-actions"><button id="coding-next" class="secondary" title="Prochaine étape">Analyser</button><button id="coding-hint" class="secondary">Indice</button><button id="coding-review" class="secondary">Vérifier</button><button id="coding-explain" class="secondary">Expliquer</button><button id="coding-stop" class="text-button" hidden>Arrêter</button></div>
  <div class="coding-feed-toolbar"><span id="coding-status" role="status"></span><button id="coding-latest" class="text-button" title="Revenir à la dernière aide" aria-label="Dernière aide" hidden>↓</button><button id="coding-clear" class="text-button" title="Effacer l’exercice et les aides">Effacer</button></div>
  <div id="coding-feed" role="log" aria-label="Aides Coding" aria-live="off"><p class="coding-empty">Ajoutez l’exercice, puis demandez une aide.</p></div>

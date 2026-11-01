@@ -8,6 +8,7 @@
 - Le lecteur PDF portable s’exécute dans un processus enfant avec délai maximal et annulation : un plantage de son composant natif ne doit plus fermer l’application.
 - Coding : entrées bornées, connexion locale authentifiée, rejet des origines web, streaming, annulation, conservation des cartes et navigation testés. L’interface empaquetée conserve la taille de fenêtre et accepte les captures reçues.
 - Firefox 159 sur Mac : extension temporaire testée dans un profil isolé, permission `activeTab`, sélection d’énoncé, modèle d’éditeur synthétique complet, avertissement sur le code partiel, connexion, envoi explicite et déconnexion. Le contrôle Mozilla `web-ext lint` passe sans erreur ni avertissement.
+- Raccourci direct : commande Alt ⇧ C enregistrée par Firefox déclenchée sur un nouvel onglet, sans popup et sans modifier l’éditeur ; échec hors connexion sans ouverture de fenêtre. Tests unitaires du double déclenchement, du changement de page, des erreurs réseau et des éditeurs multiples. Le test sans interface appelle la commande Firefox ; il ne simule pas une frappe physique sur le clavier du Mac.
 
 La capture d’une vraie visio, les permissions audio, les casques et la pertinence des réponses doivent encore être vérifiés en situation réelle sur chaque système. « Tester le son » vérifie les sources localement, sans API.
 

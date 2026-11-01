@@ -15,8 +15,12 @@ const os=require('node:os');
   await page.waitForFunction(()=>!!document.querySelector('#coding-tab').onclick);
   assert.equal((await page.evaluate(()=>window.clair.config())).hasKey,false);
   // Replace the transport only in this isolated process. No real key/API/audio.
-  await app.evaluate(async({app,clipboard})=>{
+  await app.evaluate(async({app,clipboard,safeStorage})=>{
    clipboard.writeText=text=>{global.codingQaClipboard=text;};
+   // This test exercises Coding, not the OS keychain. Only a synthetic key is
+   // written in the temporary profile; never prompt for personal keychain access.
+   safeStorage.isAsyncEncryptionAvailable=async()=>true;
+   safeStorage.encryptStringAsync=async()=>Buffer.from('QA-encrypted-placeholder');
    const require=process.getBuiltinModule('module').createRequire(app.getAppPath()+'/package.json');
    const {CodingBridge}=require('./src/coding-bridge.cjs'),listen=CodingBridge.prototype.listen;
    CodingBridge.prototype.listen=function(){this.port=0;return listen.call(this);};

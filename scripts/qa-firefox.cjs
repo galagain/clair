@@ -46,18 +46,43 @@ async function until(fn){let last;for(let i=0;i<80;i++){try{last=await fn();if(l
   await popup(`(()=>{content.document.querySelector('#send').click();return true;})()`);
   await until(async()=>(await read())?.status?.startsWith('Envoyé.'));
   assert.equal(captures.length,1);assert.equal(captures[0].source,'localhost');assert.equal(captures[0].code,preview.code);assert.ok(!JSON.stringify(captures[0]).includes('SECRET'));
+  // Firefox's registered keyboard command on a fresh tab, without a popup or a
+  // pre-existing activeTab grant. The editor and active tab must not change.
+  await chrome("document.querySelector('browser[webextension-view-type=popup]')?.closest('panel')?.hidePopup();document.getElementById('unified-extensions-panel').hidePopup();return true;");
+  await command('/moz/context',{context:'content'});
+  const fresh=await command('/window/new',{type:'tab'});await command('/window',{handle:fresh.handle});
+  await command('/url',{url:`http://localhost:${fixture.address().port}/shortcut`});
+  await command('/execute/sync',{script:"const range=document.createRange();range.selectNodeContents(document.querySelector('.view-line'));getSelection().removeAllRanges();getSelection().addRange(range);",args:[]});
+  const shortcut=async()=>{
+   await command('/moz/context',{context:'chrome'});
+   // Headless WebDriver key actions do not reliably reach macOS browser
+   // shortcuts. Invoke Firefox's own key binding, not an extension test hook.
+   const binding=await chrome("const key=document.querySelector('#ext-keyset-id-coding_clair_galagain key');const result={key:key.getAttribute('key'),modifiers:key.getAttribute('modifiers')};key.doCommand();return result;");
+   assert.equal(binding.key,'C');assert.equal(binding.modifiers,'alt,shift');
+   await command('/moz/context',{context:'content'});
+  };
+  await shortcut();await until(()=>captures.length===2);
+  assert.equal(captures[1].code,preview.code);assert.match(captures[1].statement,/Find two indices/);assert.ok(!JSON.stringify(captures[1]).includes('SECRET'));
+  assert.equal(await command('/execute/sync',{script:'return window.monaco.editor.getModels()[0].getValue()',args:[]}),preview.code);
+  await command('/moz/context',{context:'chrome'});
+  assert.equal(await chrome("return document.querySelector('browser[webextension-view-type=popup]')?.closest('panel')?.state==='open';"),false);
   // Inspect rendered DOM fallback after removing the exposed model. The user
   // must be told that only the visible code was recovered.
-  await chrome("document.getElementById('unified-extensions-panel').hidePopup();return true;");
+  await chrome("document.querySelector('browser[webextension-view-type=popup]')?.closest('panel')?.hidePopup();document.getElementById('unified-extensions-panel').hidePopup();return true;");
   await command('/moz/context',{context:'content'});
   await command('/execute/sync',{script:"delete window.monaco;getSelection().removeAllRanges();",args:[]});
   await command('/moz/context',{context:'chrome'});
   await chrome("document.getElementById('unified-extensions-button').click();return true;");
   await until(()=>chrome("return !!document.getElementById('coding_clair_galagain-BAP');"));
   await chrome("document.getElementById('coding_clair_galagain-BAP').click();return true;");
-  const fallback=await until(async()=>{const value=await read();return value?.code==='VISIBLE_FRAGMENT'&&value;});assert.match(fallback.warning,/manquer des lignes/);assert.ok(!fallback.statement.includes('SECRET'));assert.equal(captures.length,1);
-  await bridge.close();await popup(`(()=>{content.document.querySelector('#send').click();return true;})()`);await until(async()=>(await read())?.status?.includes('Clair est-il ouvert'));assert.equal(captures.length,1);
-  console.log('Firefox QA passed: real temporary add-on, activeTab, selection, full model, partial-code warning, pairing, explicit send and disconnect. No OpenAI requests.');
- }catch(error){console.error(driverLog);throw error;}
+  const fallback=await until(async()=>{const value=await read();return value?.code==='VISIBLE_FRAGMENT'&&value;});assert.match(fallback.warning,/manquer des lignes/);assert.ok(!fallback.statement.includes('SECRET'));assert.equal(captures.length,2);
+  await chrome("document.querySelector('browser[webextension-view-type=popup]')?.closest('panel')?.hidePopup();document.getElementById('unified-extensions-panel').hidePopup();return true;");
+  await command('/moz/context',{context:'content'});await shortcut();await until(()=>captures.length===3);assert.match(captures[2].warning,/manquer des lignes/);
+  await bridge.close();await shortcut();await pause(300);
+  await command('/moz/context',{context:'chrome'});
+  assert.equal(await chrome("return document.querySelector('browser[webextension-view-type=popup]')?.closest('panel')?.state==='open';"),false);
+  await until(()=>chrome("return document.querySelector('#coding_clair_galagain-BAP .toolbarbutton-badge')?.textContent==='!';"));assert.equal(captures.length,3);
+  console.log('Firefox QA passed: real temporary add-on, activeTab, selection, full model, partial-code warning, pairing, direct keyboard send without popup, unchanged editor and disconnected shortcut. No OpenAI requests.');
+ }catch(error){try{await command('/moz/context',{context:'chrome'});console.error('Shortcut diagnostic:',await chrome("return {key:document.querySelector('#ext-keyset-id-coding_clair_galagain key')?.outerHTML,title:document.getElementById('coding_clair_galagain-BAP')?.getAttribute('tooltiptext'),badge:document.querySelector('#coding_clair_galagain-BAP .toolbarbutton-badge')?.textContent};"));}catch{}console.error(driverLog);throw error;}
  finally{if(session)await fetch(base+'/session/'+session.sessionId,{method:'DELETE'}).catch(()=>{});driver?.kill();await bridge.close();fixture.closeAllConnections();await new Promise(resolve=>fixture.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Clair Coding",
-  "version": "0.19.2",
+  "version": "0.19.3",
   "description": "Envoyez un énoncé et du code à Clair, uniquement à votre demande.",
   "browser_specific_settings": {
     "gecko": {
@@ -35,14 +35,20 @@
     "96": "icon.svg"
   },
   "commands": {
-    "_execute_action": {
+    "send-to-clair": {
       "suggested_key": {
         "default": "Alt+Shift+C"
       },
-      "description": "Préparer une capture pour Clair"
+      "description": "Envoyer la page à Clair et analyser"
     }
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'none'; connect-src http://127.0.0.1:*"
+  },
+  "background": {
+    "scripts": [
+      "background.mjs"
+    ],
+    "type": "module"
   }
 }

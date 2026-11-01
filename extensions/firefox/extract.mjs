@@ -15,7 +15,10 @@ export function readPage(){
   };
   visit(root);return {text:out.join('').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim().slice(0,max),truncated:count>=max||nodes>30000};
  };
- const selection=String(window.getSelection()||'').slice(0,24000);
+ const selected=window.getSelection(),anchor=selected?.anchorNode;
+ // A highlighted variable in the code editor is not the problem statement.
+ const inEditor=(anchor?.nodeType===Node.ELEMENT_NODE?anchor:anchor?.parentElement)?.closest(editors);
+ const selection=inEditor?'':String(selected||'').slice(0,24000);
  const root=[...document.querySelectorAll('main,[role=main]')].find(visible)||document.body;
  const page=root?textOf(root):{text:'',truncated:false};
  const candidates=[];
