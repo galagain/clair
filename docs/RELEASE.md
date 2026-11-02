@@ -1,6 +1,10 @@
-Clair 0.21.0 : **quatre icônes sur iPhone pour afficher ou masquer Discours, Pistes, Traduction et Code**. Les cartes visibles sont empilées, avec un défilement indépendant. Une nouvelle réponse ne rouvre pas une carte masquée. Le choix est conservé au rechargement de l’onglet Safari.
+Clair 0.22.0 : **boutons de souris configurables sur Mac**, **quatre icônes sur l’application de bureau** et **code adapté à la largeur de l’iPhone**.
 
-**⌘ ⇧ H sur Mac / Ctrl ⇧ H sur Windows** masque ou réaffiche Clair sans arrêter l’écoute ni la connexion iPhone. La commande est également dans **… → Passer en arrière-plan**. Mettre à jour Clair puis reconnecter l’iPhone avec le nouveau QR code ; l’extension Firefox actuelle reste compatible. [Guide iPhone](https://github.com/galagain/clair/blob/main/docs/IPHONE.md).
+- Dans **Réglages → Souris**, activer la détection, autoriser l’Accessibilité macOS puis associer un bouton à l’arrière-plan et un autre à l’envoi Firefox. Les boutons standard et supplémentaires exposés par macOS sont reconnus (jusqu’au bouton 32). Le clic gauche nécessite une touche modificatrice. [Guide souris](https://github.com/galagain/clair/blob/main/docs/SOURIS.md).
+- Les icônes Discours, Pistes, Traduction et Code affichent ou masquent les cartes sur l’ordinateur. La taille de la fenêtre est conservée ; une nouvelle solution ne rouvre pas une carte Code masquée.
+- Les longues lignes de code reviennent à la ligne sur iPhone, sans défilement horizontal.
+
+Le bouton d’envoi simule **Alt ⇧ C uniquement dans Firefox au premier plan**. Garder ce raccourci dans l’extension. L’extension actuelle reste compatible. La détection globale de souris est disponible sur Mac ; Windows conserve les raccourcis clavier. Les permissions et les boutons physiques restent à valider sur la souris de l’utilisateur.
 
 - **Clair-Mac-arm64.dmg** : Mac Apple Silicon, macOS 15 minimum. Glisser Clair dans Applications.
 - **Clair-Windows-x64.exe** : Windows 10/11 64 bits. Ouvrir directement le fichier.

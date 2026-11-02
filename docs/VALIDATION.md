@@ -14,6 +14,8 @@ iPhone : serveur arrêté par défaut, contenu borné et limité aux textes affi
 
 Arrière-plan : bascule masquer/réafficher, restauration d’une fenêtre réduite et conflit de raccourci testés. Le test natif vérifie la poursuite de l’audio synthétique pendant le masquage ; le test iPhone vérifie que le partage reste actif et reçoit de nouveaux textes. La frappe physique du raccourci n’est pas simulée. Le raccourci utilise [globalShortcut](https://www.electronjs.org/docs/latest/api/global-shortcut) ; la fenêtre reste vivante via [BrowserWindow.hide](https://www.electronjs.org/docs/latest/api/browser-window).
 
+Souris Mac : module Swift compilé et autotest sans accès aux entrées globales ; protocole, associations, doublons, désactivation concurrente, oubli, permissions refusées et arrêt testés. L’interface est vérifiée avec un module simulé, sans demander d’Accessibilité ni injecter de touches dans les applications personnelles. La capture de boutons physiques et l’émission réelle du raccourci Firefox ne sont pas encore validées. Les quatre icônes bureau sont testées avec taille conservée et Code masqué ; une ligne de 350 caractères est vérifiée sans débordement horizontal dans WebKit iPhone.
+
 La capture d’une vraie visio, les permissions audio, les casques et la pertinence des réponses doivent encore être vérifiés en situation réelle sur chaque système. « Tester le son » vérifie les sources localement, sans API.
 
 CoderPad réel, les éditeurs intégrés dans des cadres d’une autre origine, Firefox sous Windows et la qualité des aides Coding avec un vrai modèle restent à valider. L’extension n’est pas signée par Mozilla ; elle est rechargeable temporairement. Aucun code n’est exécuté ni soumis.

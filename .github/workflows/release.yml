@@ -31,6 +31,8 @@ jobs:
         shell: bash
         run: node -e 'if(process.env.GITHUB_REF_NAME!=="v"+require("./package.json").version)process.exit(1)'
       - run: npm run build:native
+      - if: matrix.platform == 'mac'
+        run: build/native/arm64/clair-mouse --self-test
       - run: npm test
       - run: npm run check
       - if: matrix.platform == 'mac'
@@ -43,6 +45,8 @@ jobs:
       - if: matrix.platform == 'windows'
         run: npm run qa:windows
       - run: node scripts/qa-coding.cjs --packaged
+      - if: matrix.platform == 'mac'
+        run: node scripts/qa-mouse.cjs --packaged
       - if: matrix.platform == 'mac'
         run: npx playwright install webkit
       - if: matrix.platform == 'mac'

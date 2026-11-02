@@ -44,7 +44,7 @@ const os=require('node:os');
   await page.screenshot({path:'release/qa/clair-mac-opacity.png',omitBackground:true});await page.locator('#opacity-toggle').click();
   await app.evaluate(({BrowserWindow},bounds)=>BrowserWindow.getAllWindows()[0].setBounds(bounds),originalBounds);
 
-  assert.equal(await page.locator('#translation-toggle').evaluate(el=>el.previousElementSibling.id),'files-tab');
+  assert.equal(await page.locator('.section-switches .icon-button').count(),4);assert.equal(await page.locator('#translation-toggle').evaluate(el=>!!el.closest('header')),true);
   await emit([{type:'answer-start',id:1001},{type:'answer-delta',id:1001,text:'[[REPONSE]] Première piste conservée.'},{type:'answer-done',id:1001}]);
   await page.waitForFunction(()=>document.querySelector('#answer').textContent.includes('Première piste'));
   await page.evaluate(()=>window.qaFirstAnswer=document.querySelector('#answer .answer-entry'));

@@ -7,14 +7,18 @@
  </div>
  <button id="session-tab" class="brand selected" aria-label="Assistant" title="Assistant" aria-current="page"><span>clair<span class="brand-period">.</span></span></button>
  <div class="window-buttons">
-  <button id="coding-tab" class="icon-button" title="Coding" aria-label="Coding"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m8 6-6 6 6 6m8-12 6 6-6 6M14 4l-4 16"/></svg></button>
   <button id="files-tab" class="icon-button" title="Fichiers" aria-label="Fichiers"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7h7l2-3h8v16H3Z"/></svg><span id="files-count" hidden>0</span></button>
-  <button id="translation-toggle" class="icon-button" role="switch" aria-checked="false" title="Activer la traduction" aria-label="Traduire le discours"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 5h11M8 3v2m4 0c-1 5-4 8-9 10m2-7c1 3 4 5 7 6m1 6 4-11 4 11m-6-4h4"/></svg></button>
   <button id="settings-tab" class="icon-button" title="Réglages" aria-label="Réglages"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg></button>
   <button id="listen" class="icon-button listen" aria-label="Démarrer l’écoute" title="Démarrer l’écoute"><svg class="icon play-icon" aria-hidden="true"><use href="#i-play"/></svg><svg class="icon stop-icon" aria-hidden="true"><use href="#i-stop"/></svg><span class="sr-only">▶ Démarrer</span></button>
   <span class="divider"></span>
   <button id="more-toggle" class="icon-button" title="Plus d’options" aria-label="Plus d’options" aria-expanded="false"><svg class="icon " aria-hidden="true"><use href="#i-more"/></svg></button>
   <button id="close" class="icon-button" title="Quitter et arrêter l’écoute" aria-label="Quitter"><svg class="icon " aria-hidden="true"><use href="#i-close"/></svg></button>
+ </div>
+ <div class="section-switches" role="group" aria-label="Sections visibles">
+  <button id="speech-toggle" class="icon-button" aria-label="Discours" title="Discours" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-headphones"/></svg></button>
+  <button id="answer-toggle" class="icon-button" aria-label="Pistes" title="Pistes" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-spark"/></svg></button>
+  <button id="translation-toggle" class="icon-button" role="switch" aria-checked="false" title="Activer la traduction" aria-label="Traduire le discours"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 5h11M8 3v2m4 0c-1 5-4 8-9 10m2-7c1 3 4 5 7 6m1 6 4-11 4 11m-6-4h4"/></svg></button>
+  <button id="coding-tab" class="icon-button" title="Code" aria-pressed="false" aria-label="Coding"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m8 6-6 6 6 6m8-12 6 6-6 6M14 4l-4 16"/></svg></button>
  </div>
 </header>
 
@@ -32,7 +36,7 @@
 <main id="session-panel">
 
  <button id="notice" class="notice glass">Ajouter ma clé API <span>↗</span></button>
- <section class="speech-card glass">
+ <section id="speech-card" class="speech-card glass">
   <div class="card-heading"><span>Discours original</span><select id="transcription-language" class="language-select" aria-label="Langue du discours original" title="Langue du discours original"></select><span id="transcript-state" class="sr-only">EN ATTENTE</span></div>
   <div id="transcript" class="text-feed placeholder" role="log" aria-label="Discours original" aria-live="off">En attente de parole.</div>
   <button id="transcript-resume" class="feed-resume text-button" hidden>Reprendre le défilement ↓</button>
@@ -43,7 +47,7 @@
   <button id="translation-resume" class="feed-resume text-button" hidden>Reprendre le défilement ↓</button>
   <div id="translation-status" class="feed-status" role="status"></div>
  </section>
- <section class="answer-card glass">
+ <section id="answer-card" class="answer-card glass">
   <div class="card-heading answer-toolbar">
    <span class="answer-label" title="Piste de réponse">Piste</span>
    <div class="answer-tools">
@@ -93,6 +97,13 @@
   <select id="phone-network" aria-label="Réseau local" hidden></select>
   <div class="button-row"><button id="phone-start" class="secondary">Connecter</button><button id="phone-stop" class="text-button" hidden>Déconnecter</button></div>
   <div id="phone-pairing" hidden><img id="phone-qr" width="200" height="200" alt="QR code de connexion à Clair"><input id="phone-link" readonly aria-label="Lien iPhone"><button id="phone-copy" class="text-button">Copier le lien</button><p class="file-hint">Wi-Fi de confiance uniquement. Le lien donne accès à l’affichage ; la connexion locale n’est pas chiffrée.</p></div>
+ </details>
+ <details id="mouse-section" class="settings-group"><summary>Souris</summary>
+ <div class="button-row"><button id="mouse-enable" class="secondary">Activer</button><button id="mouse-permissions" class="text-button">Autorisations ↗</button></div>
+ <div class="mouse-binding"><span>Arrière-plan</span><button id="mouse-background" class="secondary">Aucun</button><button id="mouse-forget-background" class="text-button" aria-label="Oublier le bouton Arrière-plan">×</button></div>
+ <div class="mouse-binding"><span>Envoyer Firefox</span><button id="mouse-firefox" class="secondary">Aucun</button><button id="mouse-forget-firefox" class="text-button" aria-label="Oublier le bouton Firefox">×</button></div>
+ <p id="mouse-last" class="file-hint"></p><p id="mouse-result" class="file-hint" role="status"></p>
+ <p class="file-hint">Cliquez sur Aucun pour choisir un bouton. Pour le clic gauche, maintenez aussi une touche ⌥, ⌃, ⇧ ou ⌘. Firefox doit être au premier plan et utiliser Alt ⇧ C.</p>
  </details>
  <section class="key-section"><h2>Clé API</h2>
  <input id="key" type="password" maxlength="512" autocomplete="off" spellcheck="false" placeholder="sk-…" aria-label="Clé API OpenAI">

@@ -5,11 +5,13 @@ import {AnswerHistory} from './answer-history.mjs';
 import {AnswerFeed} from './answer-feed.mjs';
 import {TextFeed} from './text-feed.mjs';
 import {AudioCapture} from './capture.mjs';
+import {installMouse} from './mouse-view.mjs';
 import {installPhone} from './phone-view.mjs';
 import {installCoding} from './coding-view.mjs';
 const api=window.clair,$=id=>document.getElementById(id);let config,hasKey=false,running=false,starting=false,diagnostic=false,diagnosticTimer=null,signalSeen=false,clock=null,elapsed=0,listenEpoch=0,answerId=null,compact=false,testing=false,demoTimer=null,lastSignal=0,silenceWarning=null,audioStatus='Audio automatique · ordinateur + micro',diagnosticSources={system:false,mic:false};
 const capture=new AudioCapture({mediaDevices:navigator.mediaDevices,AudioContextImpl:AudioContext,WorkletImpl:AudioWorkletNode});
 const fields=['model','silenceMs'];
+let panels={speech:true,answer:true,coding:false};try{const saved=JSON.parse(localStorage.getItem('clair-panels')||'null');if(saved)for(const name of Object.keys(panels))if(typeof saved[name]==='boolean')panels[name]=saved[name];}catch{}
 let view='session',filesBusy=false,contextFiles=[],fileEpoch=0;
 const history=new AnswerHistory();let displayedAnswer='',locale='fr';
 const answerFeed=new AnswerFeed($('answer'),history,answerChrome);
@@ -23,11 +25,18 @@ let translationId=null,preferenceBusy=false;
 for(const id of ['translation-language','answer-language','transcription-language'])for(const [value,name] of Object.entries(LANGUAGES)){const option=document.createElement('option');option.value=value;option.textContent=name;$(id).append(option);}
 function preferenceView(){if(!config)return;$('translation-card').hidden=!config.translationEnabled;$('translation-toggle').setAttribute('aria-checked',String(config.translationEnabled));$('translation-toggle').title=config.translationEnabled?'Désactiver la traduction':'Activer la traduction';$('translation-language').value=config.translationLanguage;$('answer-language').value=config.answerLanguage;$('transcription-language').value=config.transcriptionLanguage;for(const id of ['translation-toggle','translation-language','answer-language','transcription-language'])$(id).disabled=preferenceBusy;}
 async function preferences(patch){if(preferenceBusy)return;preferenceBusy=true;preferenceView();try{const saved=await api.preferences(patch);config={...config,...saved};}catch(e){error(e.message);}finally{preferenceBusy=false;preferenceView();}}
-$('translation-toggle').onclick=()=>preferences({translationEnabled:!config.translationEnabled});
+$('translation-toggle').onclick=()=>{api.preserveSize();void preferences({translationEnabled:!config.translationEnabled});};
 $('translation-language').onchange=e=>preferences({translationLanguage:e.target.value});
 $('answer-language').onchange=e=>preferences({answerLanguage:e.target.value});
 $('transcription-language').onchange=e=>preferences({transcriptionLanguage:e.target.value});
-function showView(next){view=next;for(const name of ['session','settings','files','coding']){$(name+'-panel').hidden=name!==next;$(name+'-tab').classList.toggle('selected',name===next);if(name===next)$(name+'-tab').setAttribute('aria-current','page');else $(name+'-tab').removeAttribute('aria-current');}document.body.classList.toggle('settings-open',next!=='session');closeMenu();window.scrollTo(0,0);}
+function sections(){
+ $('speech-card').hidden=!panels.speech;$('answer-card').hidden=!panels.answer;$('coding-panel').hidden=view!=='session'||!panels.coding;
+ for(const [id,name] of [['speech-toggle','speech'],['answer-toggle','answer'],['coding-tab','coding']]){$(id).setAttribute('aria-pressed',String(panels[name]));$(id).classList.toggle('selected',panels[name]);}
+}
+function toggleSection(name){api.preserveSize();panels[name]=!panels[name];try{localStorage.setItem('clair-panels',JSON.stringify(panels));}catch{}showView('session');}
+function showView(next){view=next;for(const name of ['session','settings','files']){$(name+'-panel').hidden=name!==next;$(name+'-tab').classList.toggle('selected',name===next);if(name===next)$(name+'-tab').setAttribute('aria-current','page');else $(name+'-tab').removeAttribute('aria-current');}sections();document.body.classList.toggle('settings-open',next!=='session');closeMenu();window.scrollTo(0,0);}
+$('speech-toggle').onclick=()=>toggleSection('speech');$('answer-toggle').onclick=()=>toggleSection('answer');
+
 function settings(open){showView(open?'settings':'session');}
 function closeMenu(){$('more-menu').hidden=true;$('more-toggle').setAttribute('aria-expanded','false');}
 function fill(c){config=c;ui('background-shortcut',c.backgroundShortcutRegistered?(c.platform==='darwin'?'⌘ ⇧ H':'Ctrl ⇧ H'):'Raccourci indisponible');capture.platform=c.platform;$('opacity').value=c.opacity;$('opacity').title='Opacité : '+Math.round(c.opacity*100)+' %';preferenceView();capture.native=c.nativeAudio?{start:id=>api.systemStart(id),stop:id=>api.systemStop(id),subscribe:fn=>api.onEvent(fn)}:null;hasKey=c.hasKey??hasKey;for(const key of fields){const el=$(key);if(el.type==='checkbox')el.checked=c[key];else el.value=String(c[key]);}$('pin').classList.toggle('active',c.alwaysOnTop);$('pin').setAttribute('aria-pressed',String(c.alwaysOnTop));$('model-label').textContent=c.model.replace('gpt-','GPT-').replace('-sol',' Sol').replace('-luna',' Luna').replace('-astra',' Astra');$('notice').hidden=hasKey;$('key').placeholder=hasKey?t('Clé enregistrée'):'sk-…';ui('shortcut','{shortcut} : écoute',{shortcut:'Ctrl ⇧ Espace'});if(c.platform==='darwin'){ui('shortcut','{shortcut} : écoute',{shortcut:'⌘ ⇧ Espace'});$('mac-permissions').hidden=false;}}
@@ -134,7 +143,8 @@ document.addEventListener('drop',e=>{e.preventDefault();$('drop-zone').classList
 $('clear-files').onclick=async()=>{try{renderFiles(await api.clearFiles());ui('file-result','');}catch(e){ui('file-result',e.message);}};
 
 installOverlay(api);
-await installCoding(api,{show:()=>showView('coding'),toggle:()=>showView(view==='coding'?'session':'coding')});
+await installCoding(api,{show:()=>{sections();},toggle:()=>toggleSection('coding')});
+sections();
 
 const phoneIds=new WeakMap();let phoneSequence=0;
 function phoneParagraphs(id){const items=[...$(id).querySelectorAll('.feed-paragraph,.feed-live')].map(node=>{if(!phoneIds.has(node))phoneIds.set(node,String(++phoneSequence));return {id:phoneIds.get(node),text:node.textContent,source:node.dataset.source};});return items.length||id!=='transcript'||$('transcript-state').textContent!=='EXEMPLE'?items:[{id:'demo',text:$(id).textContent}];}
@@ -145,3 +155,5 @@ await installPhone(api,{snapshot:()=>({
  answers:history.visible().length?history.visible().map(item=>({id:String(item.id),text:plainAnswer(item.answer)})):displayedAnswer?[{id:'demo',text:plainAnswer(displayedAnswer)}]:[],
  coding:{id:$('coding-solution').dataset.id||'',text:$('coding-solution').textContent,status:$('coding-status').textContent}
 })});
+
+await installMouse(api);

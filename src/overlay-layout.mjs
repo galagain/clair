@@ -16,7 +16,7 @@ export function installOverlay(api){
   if(document.documentElement.scrollHeight>innerHeight)add({left:innerWidth-7,right:innerWidth,top:52,bottom:innerHeight-10});
   const view=['session','files','settings','coding'].find(name=>!document.getElementById(name+'-panel').hidden)||'session';
   const panel=document.getElementById(view+'-panel'),padding=parseFloat(getComputedStyle(document.body).paddingBottom)||0;
-  const height=Math.ceil(panel.getBoundingClientRect().bottom+scrollY+padding);
+  const coding=document.getElementById('coding-panel');const bottom=Math.max(panel.getBoundingClientRect().bottom,coding.hidden?0:coding.getBoundingClientRect().bottom);const height=Math.ceil(bottom+scrollY+padding);
   const value={regions,view,height},encoded=JSON.stringify(value);
   if(encoded!==last){last=encoded;api.overlayLayout(value);}
  }

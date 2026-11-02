@@ -14,6 +14,7 @@ npm start
 npm test
 npm run check
 npm run qa:coding # application isolée, API simulée
+npm run qa:mouse # Mac : module souris simulé, aucune permission demandée
 npx playwright install webkit
 npm run qa:phone # WebKit au format iPhone, réseau de test local
 ```

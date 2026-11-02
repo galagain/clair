@@ -1,6 +1,6 @@
 {
   "name": "clair-desktop",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "private": true,
   "description": "Transcription et assistance aux entretiens en visio",
   "author": "Clair",
@@ -22,7 +22,8 @@
     "dist:firefox": "node scripts/package-firefox.cjs",
     "qa:coding": "node scripts/qa-coding.cjs",
     "qa:firefox": "node scripts/qa-firefox.cjs",
-    "qa:phone": "node scripts/qa-phone.cjs"
+    "qa:phone": "node scripts/qa-phone.cjs",
+    "qa:mouse": "node scripts/qa-mouse.cjs"
   },
   "dependencies": {
     "pdf-parse": "2.4.5",
@@ -70,6 +71,10 @@
         {
           "from": "build/native/${arch}/clair-system-audio",
           "to": "native/clair-system-audio"
+        },
+        {
+          "from": "build/native/${arch}/clair-mouse",
+          "to": "native/clair-mouse"
         },
         {
           "from": "build/native/${arch}/clair-pdf-text",

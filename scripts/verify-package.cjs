@@ -13,7 +13,7 @@ for(const name of fs.readdirSync('extensions/firefox'))assert.deepEqual(fs.readF
 console.log('Bundled Firefox extension matches the sources.');
 
 if(archive.includes('Clair.app')){
- for(const name of ['clair-system-audio','clair-pdf-text']){
+ for(const name of ['clair-system-audio','clair-pdf-text','clair-mouse']){
   assert.deepEqual(fs.readFileSync(path.join(path.dirname(archive),'native',name)),fs.readFileSync('build/native/'+process.arch+'/'+name));
  }
  console.log('Packaged native audio and PDF helpers match the compiled binaries.');
