@@ -8,14 +8,19 @@ import Darwin
 func emit(_ value: [String: Any]) { if let data = try? JSONSerialization.data(withJSONObject: value) { FileHandle.standardOutput.write(data + Data([10])) } }
 func failure(_ text: String) -> NSError { NSError(domain: "ClairMirror", code: 1, userInfo: [NSLocalizedDescriptionKey: text]) }
 func excluded(_ pid: pid_t, _ bundle: String, parent: pid_t) -> Bool { pid == parent || pid == getpid() || bundle == "fr.clair.assistant" || bundle.hasPrefix("fr.clair.assistant.") }
-func dimensions(_ width: Int, _ height: Int) -> (Int, Int) { let ratio = min(1, 1920.0 / Double(max(1, width)), 1080.0 / Double(max(1, height))); return (max(2, Int(Double(width) * ratio) / 2 * 2), max(2, Int(Double(height) * ratio) / 2 * 2)) }
+func dimensions(_ width: Int, _ height: Int, quality: String) -> (Int, Int) { if quality == "native" { return (max(1, width), max(1, height)) }; let ratio = min(1, 1920.0 / Double(max(1, width)), 1080.0 / Double(max(1, height))); return (max(2, Int(Double(width) * ratio) / 2 * 2), max(2, Int(Double(height) * ratio) / 2 * 2)) }
 if CommandLine.arguments.contains("--self-test") {
  precondition(excluded(123, "", parent: 123)); precondition(excluded(456, "fr.clair.assistant.mirror", parent: 123)); precondition(!excluded(456, "org.mozilla.firefox", parent: 123))
- let (w, h) = dimensions(5120, 2880); precondition(w == 1920 && h == 1080)
+ let (w, h) = dimensions(5120, 2880, quality: "economy"); precondition(w == 1920 && h == 1080)
+ let native = dimensions(5120, 2880, quality: "native"); precondition(native.0 == 5120 && native.1 == 2880)
+ let portrait = dimensions(2880, 5120, quality: "native"); precondition(portrait.0 == 2880 && portrait.1 == 5120)
  emit(["type": "self-test", "ok": true]); exit(0)
 }
 func argument(_ key: String) -> String? { guard let i = CommandLine.arguments.firstIndex(of: key), i + 1 < CommandLine.arguments.count else { return nil }; return CommandLine.arguments[i + 1] }
 guard let source = argument("--source").flatMap(UInt32.init), let target = argument("--target").flatMap(UInt32.init), let parent = argument("--parent").flatMap(Int32.init), source != target, parent > 1 else { emit(["type": "error", "message": "Choisissez deux écrans distincts."]); exit(1) }
+
+let quality = argument("--quality") ?? "native"
+guard ["native", "economy"].contains(quality) else { emit(["type": "error", "message": "Qualité de recopie invalide."]); exit(1) }
 
 final class MirrorWindow: NSWindow {
  override var canBecomeKey: Bool { true }
@@ -23,7 +28,8 @@ final class MirrorWindow: NSWindow {
 }
 final class Mirror: NSObject, NSApplicationDelegate, NSWindowDelegate, SCStreamOutput, SCStreamDelegate {
  let source: CGDirectDisplayID, target: CGDirectDisplayID, parent: pid_t
- init(source: CGDirectDisplayID, target: CGDirectDisplayID, parent: pid_t) { self.source = source; self.target = target; self.parent = parent; super.init() }
+ let quality: String
+ init(source: CGDirectDisplayID, target: CGDirectDisplayID, parent: pid_t, quality: String) { self.quality = quality; self.source = source; self.target = target; self.parent = parent; super.init() }
  var window: NSWindow?
  var image: NSImageView?
  var stream: SCStream?
@@ -45,8 +51,13 @@ final class Mirror: NSObject, NSApplicationDelegate, NSWindowDelegate, SCStreamO
   let hidden = content.applications.filter { excluded($0.processID, $0.bundleIdentifier, parent: parent) }
   guard hidden.contains(where: { $0.processID == parent }) else { throw failure("Impossible de confirmer l’exclusion de Clair. Recopie annulée.") }
   let filter = SCContentFilter(display: display, excludingApplications: hidden, exceptingWindows: [])
-  let config = SCStreamConfiguration(), (width, height) = dimensions(display.width, display.height)
-  config.width = width; config.height = height; config.minimumFrameInterval = CMTime(value: 1, timescale: 30); config.queueDepth = 3; config.pixelFormat = kCVPixelFormatType_32BGRA; config.showsCursor = true; config.capturesAudio = false
+  let scale = Double(filter.pointPixelScale), rect = filter.contentRect
+  guard scale.isFinite, scale > 0, rect.width > 0, rect.height > 0 else { throw failure("Résolution native indisponible pour cet écran.") }
+  let (width, height) = dimensions(Int((rect.width * scale).rounded()), Int((rect.height * scale).rounded()), quality: quality)
+  let fps: Int32 = quality == "native" ? 60 : 30
+  let config = SCStreamConfiguration()
+  config.captureResolution = quality == "native" ? .best : .automatic
+  config.width = width; config.height = height; config.minimumFrameInterval = CMTime(value: 1, timescale: fps); config.queueDepth = 3; config.pixelFormat = kCVPixelFormatType_32BGRA; config.showsCursor = true; config.capturesAudio = false
   let capture = SCStream(filter: filter, configuration: config, delegate: self)
   try capture.addStreamOutput(self, type: .screen, sampleHandlerQueue: frames)
   stream = capture
@@ -58,7 +69,7 @@ final class Mirror: NSObject, NSApplicationDelegate, NSWindowDelegate, SCStreamO
   window = win; image = view
   try await capture.startCapture()
   guard !stopping else { return }
-  win.orderFrontRegardless(); emit(["type": "ready", "source": source, "target": target])
+  win.orderFrontRegardless(); emit(["type": "ready", "source": source, "target": target, "quality": quality, "width": width, "height": height, "fps": fps])
  }
  func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of outputType: SCStreamOutputType) {
   guard outputType == .screen, CMSampleBufferDataIsReady(sampleBuffer), let buffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
@@ -78,5 +89,5 @@ final class Mirror: NSObject, NSApplicationDelegate, NSWindowDelegate, SCStreamO
 }
 let application = NSApplication.shared
 application.setActivationPolicy(.accessory)
-let delegate = Mirror(source: source, target: target, parent: parent); application.delegate = delegate
+let delegate = Mirror(source: source, target: target, parent: parent, quality: quality); application.delegate = delegate
 application.run()

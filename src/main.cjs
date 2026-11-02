@@ -47,7 +47,7 @@ async function setup(){
  session.defaultSession.setPermissionCheckHandler((wc,permission)=>wc===win.webContents&&captureAllowed&&['media','display-capture'].includes(permission));
  session.defaultSession.setDisplayMediaRequestHandler(async(request,callback)=>{if(process.platform==='darwin'){callback({});return;}if(!captureAllowed||request.frame?.url!==indexURL){callback({});return;}try{const sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:{width:0,height:0}});if(!sources.length||!captureAllowed){callback({});return;}callback({video:sources[0],audio:'loopback'});}catch{callback({});}},{useSystemPicker:false});
  mirror=new Mirror({executable:app.isPackaged?path.join(process.resourcesPath,'native','clair-mirror'):path.join(__dirname,'../build/native',process.arch,'clair-mirror'),displays:()=>screen.getAllDisplays(),emit:send});
- guard('mirror:state',()=>mirror.state());guard('mirror:start',(source,target)=>mirror.start(source,target));guard('mirror:stop',()=>mirror.stop());
+ guard('mirror:state',()=>mirror.state());guard('mirror:start',(source,target,quality)=>mirror.start(source,target,quality));guard('mirror:stop',()=>mirror.stop());
  for(const event of ['display-added','display-removed','display-metrics-changed'])screen.on(event,()=>mirror.changed());
  powerMonitor.on('lock-screen',()=>mirror.stop());
  mouse=new MouseShortcuts({executable:app.isPackaged?path.join(process.resourcesPath,'native','clair-mouse'):path.join(__dirname,'../build/native',process.arch,'clair-mouse'),emit:send,action:()=>background.toggle(),save:value=>atomic(path.join(app.getPath('userData'),'mouse.json'),value)});

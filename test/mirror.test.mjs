@@ -9,10 +9,11 @@ function setup(options={}){
 }
 test('Mirror requires two connected distinct displays and rejects invalid or unsupported requests',()=>{
  const {mirror,children}=setup();for(const pair of [[1,1],[1,3],['1',2],[-1,2],[1,Infinity]])assert.throws(()=>mirror.start(...pair));assert.equal(children.length,0);
+ assert.throws(()=>mirror.start(1,2,'invalid'),/Qualité/);
  assert.throws(()=>setup({available:false}).mirror.start(1,2),/Mac/);
 });
 test('Mirror starts only on explicit command, passes IDs and parent, and stops the exact child',async()=>{
- const {mirror,children,send}=setup();assert.equal(children.length,0);const pending=mirror.start(1,2);assert.equal(mirror.state().status,'starting');assert.deepEqual(children[0].args,['--source','1','--target','2','--parent','100']);
+ const {mirror,children,send}=setup();assert.equal(children.length,0);const pending=mirror.start(1,2);assert.equal(mirror.state().status,'starting');assert.deepEqual(children[0].args,['--source','1','--target','2','--parent','100','--quality','native']);
  send({type:'ready',source:1,target:2});assert.equal((await pending).status,'active');assert.throws(()=>mirror.start(2,1),/Arrêtez/);mirror.stop();assert.equal(children[0].killed,true);assert.equal(mirror.state().status,'off');
 });
 test('Mirror reports permission failures and can be retried without stale callbacks',async()=>{
@@ -28,4 +29,8 @@ test('Mirror rejects inconsistent screens, malformed streams and stalled helpers
  for(const event of [null,{type:'ready',source:2,target:1}]){const {mirror,send}=setup();const promise=mirror.start(1,2);send(event);await assert.rejects(promise);assert.equal(mirror.state().status,'off');}
  const {mirror,children}=setup();const invalid=mirror.start(1,2);children[0].stdout.emit('data',Buffer.from('x'.repeat(65537)));await assert.rejects(invalid,/invalide/);
  const slow=setup({timeoutMs:5});await assert.rejects(slow.mirror.start(1,2),/trop long/);assert.equal(slow.children[0].killed,true);
+});
+
+test('Mirror passes economical quality and reports the actual native output dimensions',async()=>{
+ const {mirror,children,send}=setup();const pending=mirror.start(1,2,'economy');assert.deepEqual(children[0].args.slice(-2),['--quality','economy']);send({type:'ready',source:1,target:2,width:1920,height:1080,fps:30});const state=await pending;assert.equal(state.quality,'economy');assert.deepEqual(state.output,{width:1920,height:1080,fps:30});mirror.stop();assert.equal(mirror.state().output,null);
 });

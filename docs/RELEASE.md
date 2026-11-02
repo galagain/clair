@@ -1,10 +1,12 @@
-Clair 0.24.0 : **bouton Recopie sans Clair sur Mac**.
+Clair 0.25.0 : **choix de qualité de la recopie**.
 
-Le bouton aux deux écrans, en haut, ouvre le choix de l’écran source et de l’écran de destination. La copie locale s’affiche en plein écran sur la destination avec les fenêtres de Clair exclues par ScreenCaptureKit. Reclique sur le bouton pour arrêter. Deux écrans en affichage étendu et l’autorisation macOS d’enregistrement de l’écran sont nécessaires.
+Dans le menu aux deux écrans, le sélecteur **Qualité** propose :
+- **Maximale** : résolution native Retina de la source, jusqu’à 60 images/seconde ; sélectionnée par défaut.
+- **Économique** : jusqu’à 1080p, 30 images/seconde.
 
-Les images ne quittent pas le module natif et ne sont pas sauvegardées. Vue en lecture seule, 1080p et 30 images/seconde au maximum. Arrêt à la fermeture, en veille, au verrouillage ou lors d’un changement d’écrans. [Guide et limites](https://github.com/galagain/clair/blob/main/docs/RECOPIE.md).
+Le choix est mémorisé. Arrêter la recopie avant de changer de qualité, puis la redémarrer. Le mode maximal demande davantage de ressources ; la fluidité et la netteté finales dépendent aussi des écrans. Les dimensions et la cadence configurées sont indiquées dans l’infobulle du bouton pendant la recopie.
 
-153 tests unitaires et contrôles d’interface avec module de recopie simulé ; module natif compilé. La capture réelle et l’exclusion de Clair restent à vérifier sur deux écrans physiques. Aucun accès à l’écran n’a été accordé automatiquement pendant les tests.
+154 tests unitaires, compilation native et interface vérifiée avec une capture simulée. La netteté et les performances du nouveau mode restent à vérifier sur les écrans physiques. [Guide](https://github.com/galagain/clair/blob/main/docs/RECOPIE.md).
 
 - **Clair-Mac-arm64.dmg** : Mac Apple Silicon, macOS 15 minimum. Glisser Clair dans Applications.
 - **Clair-Windows-x64.exe** : Windows 10/11 64 bits. Ouvrir directement le fichier.
