@@ -1,11 +1,10 @@
-Clair 0.23.0 : **code commenté et adaptation automatique à la voix**.
+Clair 0.24.0 : **bouton Recopie sans Clair sur Mac**.
 
-- Quelques commentaires courts en français expliquent les étapes dans le code Python ou C++.
-- **Suivre ma voix**, activé dans le menu Coding, utilise les phrases finalisées attribuées au micro pour adapter l’exercice courant. Le son système et les sources ambiguës sont exclus.
-- L’ancienne solution reste visible pendant la génération ; seule une réponse terminée la remplace. **Revenir** restaure la version précédente.
-- Pause d’environ 1,5 seconde après transcription, analyses espacées d’au moins huit secondes. Le suivi peut être désactivé et utilise des appels API supplémentaires. Aucun code n’est écrit dans l’éditeur du navigateur.
+Le bouton aux deux écrans, en haut, ouvre le choix de l’écran source et de l’écran de destination. La copie locale s’affiche en plein écran sur la destination avec les fenêtres de Clair exclues par ScreenCaptureKit. Reclique sur le bouton pour arrêter. Deux écrans en affichage étendu et l’autorisation macOS d’enregistrement de l’écran sont nécessaires.
 
-Tests avec API et transcriptions simulées ; pertinence des commentaires et adaptations à vérifier en situation réelle. [Fonctionnement et limites](https://github.com/galagain/clair/blob/main/docs/CODING.md).
+Les images ne quittent pas le module natif et ne sont pas sauvegardées. Vue en lecture seule, 1080p et 30 images/seconde au maximum. Arrêt à la fermeture, en veille, au verrouillage ou lors d’un changement d’écrans. [Guide et limites](https://github.com/galagain/clair/blob/main/docs/RECOPIE.md).
+
+153 tests unitaires et contrôles d’interface avec module de recopie simulé ; module natif compilé. La capture réelle et l’exclusion de Clair restent à vérifier sur deux écrans physiques. Aucun accès à l’écran n’a été accordé automatiquement pendant les tests.
 
 - **Clair-Mac-arm64.dmg** : Mac Apple Silicon, macOS 15 minimum. Glisser Clair dans Applications.
 - **Clair-Windows-x64.exe** : Windows 10/11 64 bits. Ouvrir directement le fichier.

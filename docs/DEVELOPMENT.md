@@ -47,3 +47,5 @@ Mettre à jour la version dans `package.json` et `package-lock.json`, puis pouss
 - `build/icon.png` : icône source.
 
 Les PDF sont extraits localement : PDFKit sur Mac, lecteur isolé `pdf-parse` sur Windows. Aucun fichier utilisateur ni clé API n’est inclus dans le dépôt.
+
+`npm run qa:mirror` contrôle le menu de recopie avec un module simulé, sans capturer le bureau ni demander de permission. `build/native/arm64/clair-mirror --self-test` vérifie les contrôles natifs sans ouvrir de fenêtre.

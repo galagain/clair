@@ -1,6 +1,7 @@
 const {contextBridge,ipcRenderer}=require('electron');
 const call=(channel,...args)=>ipcRenderer.invoke(channel,...args).then(r=>{if(!r.ok)throw Error(r.error);return r.value});
 contextBridge.exposeInMainWorld('clair',{
+ mirrorState:()=>call('mirror:state'),mirrorStart:(source,target)=>call('mirror:start',source,target),mirrorStop:()=>call('mirror:stop'),
  mouseState:()=>call('mouse:state'),mouseEnable:value=>call('mouse:enable',value),mouseLearn:action=>call('mouse:learn',action),mouseForget:action=>call('mouse:forget',action),mousePermissions:()=>call('mouse:permissions'),
  phoneState:()=>call('phone:state'),phoneStart:address=>call('phone:start',address),phoneStop:()=>call('phone:stop'),phonePublish:value=>ipcRenderer.send('phone:publish',value),
  codingState:()=>call('coding:state'),codingAnalyze:(snapshot,action)=>call('coding:analyze',snapshot,action),codingCancel:()=>call('coding:cancel'),codingUndo:()=>call('coding:undo'),codingClear:()=>call('coding:clear'),codingPair:()=>call('coding:pair'),codingDisconnect:()=>call('coding:disconnect'),codingExtension:()=>call('coding:extension'),

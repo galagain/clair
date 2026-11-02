@@ -5,6 +5,7 @@ import {AnswerHistory} from './answer-history.mjs';
 import {AnswerFeed} from './answer-feed.mjs';
 import {TextFeed} from './text-feed.mjs';
 import {AudioCapture} from './capture.mjs';
+import {installMirror} from './mirror-view.mjs';
 import {installMouse} from './mouse-view.mjs';
 import {installPhone} from './phone-view.mjs';
 import {installCoding} from './coding-view.mjs';
@@ -157,3 +158,4 @@ await installPhone(api,{snapshot:()=>({
 })});
 
 await installMouse(api);
+await installMirror(api);

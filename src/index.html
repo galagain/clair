@@ -14,7 +14,7 @@
   <button id="more-toggle" class="icon-button" title="Plus d’options" aria-label="Plus d’options" aria-expanded="false"><svg class="icon " aria-hidden="true"><use href="#i-more"/></svg></button>
   <button id="close" class="icon-button" title="Quitter et arrêter l’écoute" aria-label="Quitter"><svg class="icon " aria-hidden="true"><use href="#i-close"/></svg></button>
  </div>
- <div class="section-toolbar"><div class="section-switches" role="group" aria-label="Sections visibles">
+ <div class="section-toolbar"><button id="mirror-toggle" class="icon-button" title="Recopie sans Clair" aria-label="Recopie sans Clair" aria-haspopup="dialog" aria-expanded="false" aria-pressed="false" hidden><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="8" width="13" height="12" rx="2"/><path d="M8 8V4h13v12h-5"/></svg></button><div class="section-switches" role="group" aria-label="Sections visibles">
   <button id="speech-toggle" class="icon-button" aria-label="Discours" title="Discours" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-headphones"/></svg></button>
   <button id="answer-toggle" class="icon-button" aria-label="Pistes" title="Pistes" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-spark"/></svg></button>
   <button id="translation-toggle" class="icon-button" role="switch" aria-checked="false" title="Activer la traduction" aria-label="Traduire le discours"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 5h11M8 3v2m4 0c-1 5-4 8-9 10m2-7c1 3 4 5 7 6m1 6 4-11 4 11m-6-4h4"/></svg></button>
@@ -32,6 +32,12 @@
  <button id="minimize">Réduire la fenêtre <span>−</span></button>
  <div class="menu-meta"><span id="timer">00:00</span><span id="model-label">GPT-6.1 Sol</span><span id="shortcut">Ctrl ⇧ Espace : écoute</span></div>
 </div>
+<section id="mirror-menu" class="mirror-menu glass" role="dialog" aria-labelledby="mirror-title" hidden>
+ <div class="panel-heading"><h2 id="mirror-title">Recopie sans Clair</h2><button id="mirror-close" class="icon-button" aria-label="Fermer le menu Recopie"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button></div>
+ <label>Écran à recopier<select id="mirror-source"></select></label><label>Afficher la copie sur<select id="mirror-target"></select></label>
+ <div class="button-row"><button id="mirror-start" class="secondary">Démarrer</button><button id="mirror-stop" class="secondary" hidden>Arrêter</button><button id="mirror-permissions" class="text-button">Autorisations ↗</button></div>
+ <p id="mirror-status" class="feed-status" role="status"></p><p class="file-hint">Affichage étendu requis. Copie locale en lecture seule ; continuez à travailler sur l’écran d’origine.</p>
+</section>
 <section id="coding-menu" class="coding-menu glass" role="dialog" aria-labelledby="coding-menu-title" hidden>
  <h2 id="coding-menu-title" class="sr-only">Réglages Coding</h2>
  <div class="coding-toolbar">

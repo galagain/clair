@@ -8,6 +8,7 @@ const {NativeSystemAudio}=require('./native-audio.cjs');
 const {DocumentContext,extractPDF}=require('./documents.cjs');
 const {extractPortablePDF}=require('./pdf-portable.cjs');
 const {CodingBridge}=require('./coding-bridge.cjs');
+const {Mirror}=require('./mirror.cjs');
 const {MouseShortcuts,mouseConfiguration}=require('./mouse-shortcuts.cjs');
 const {registerBackgroundWindow}=require('./background-window.cjs');
 const {PhoneServer}=require('./phone-server.cjs');
@@ -15,7 +16,7 @@ const QRCode=require('qrcode');
 const phone=new PhoneServer({onStatus:value=>send({type:'phone-status',...value})});
 const documents=new DocumentContext({extract:(bytes,options)=>process.platform!=='darwin'?extractPortablePDF(bytes,options):extractPDF(app.isPackaged?path.join(process.resourcesPath,'native','clair-pdf-text'):path.join(__dirname,'../build/native',process.arch,'clair-pdf-text'),bytes,options),onChange:files=>{engine?.setDocuments(files);send({type:'files-changed',files:documents.list()});}});
 const nativeAudio=new NativeSystemAudio({executable:app.isPackaged?path.join(process.resourcesPath,'native','clair-system-audio'):path.join(__dirname,'../build/native',process.arch,'clair-system-audio'),emit:send});
-let win,background,mouse,overlay,engine,coding,codingSpeech,bridge,config,key='',storedKeys=false,captureAllowed=false,mod;
+let win,background,mouse,mirror,overlay,engine,coding,codingSpeech,bridge,config,key='',storedKeys=false,captureAllowed=false,mod;
 // Explicit isolated profile for native QA; never read the user's keys in tests.
 if(app.commandLine.hasSwitch('user-data-dir'))app.setPath('userData',path.resolve(app.commandLine.getSwitchValue('user-data-dir')));
 const indexURL=pathToFileURL(path.join(__dirname,'index.html')).href;
@@ -41,10 +42,14 @@ async function setup(){
  const {CodingSpeech}=await import('./coding-speech.mjs');codingSpeech=new CodingSpeech({enabled:()=>config.codingAutoVoice&&engine.running,state:()=>coding.state(),adapt:text=>coding.adapt(text,codingOptions()),cancel:()=>{if(coding.active?.item.action==='adapt')coding.cancel();},report:error=>send({type:'coding-adapt-error',error:mod.safeError(error)})});
  bridge=new CodingBridge({receive:snapshot=>analyzeCoding(snapshot)});
  const area=screen.getPrimaryDisplay().workArea;win=new BrowserWindow({title:'Clair — Assistant d’entretien',width:400,height:300,minWidth:340,minHeight:180,x:Math.max(area.x,area.x+area.width-420),y:area.y+30,frame:false,acceptFirstMouse:true,transparent:true,hasShadow:false,backgroundColor:'#00000000',show:false,alwaysOnTop:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true,backgroundThrottling:false}});overlay=new WindowOverlay(win,screen);Menu.setApplicationMenu(process.platform==='darwin'?Menu.buildFromTemplate([{role:'appMenu'},{role:'editMenu'},{role:'windowMenu'}]):null);syncWindow();if(process.platform==='darwin')win.setVisibleOnAllWorkspaces(true,{visibleOnFullScreen:true});
- win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-navigate',(e,url)=>{if(url!==indexURL)e.preventDefault()});win.webContents.on('render-process-gone',()=>{overlay.reset();engine.stop();coding.cancel();mouse?.stop();void phone.close();});win.webContents.on('did-start-loading',()=>{overlay.reset();captureAllowed=false;engine.stop();coding.cancel();mouse?.stop();void phone.close();});
+ win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-navigate',(e,url)=>{if(url!==indexURL)e.preventDefault()});win.webContents.on('render-process-gone',()=>{overlay.reset();mirror?.stop();engine.stop();coding.cancel();mouse?.stop();void phone.close();});win.webContents.on('did-start-loading',()=>{overlay.reset();mirror?.stop();captureAllowed=false;engine.stop();coding.cancel();mouse?.stop();void phone.close();});
  session.defaultSession.setPermissionRequestHandler((wc,permission,callback)=>callback(wc===win.webContents&&captureAllowed&&['media','display-capture'].includes(permission)));
  session.defaultSession.setPermissionCheckHandler((wc,permission)=>wc===win.webContents&&captureAllowed&&['media','display-capture'].includes(permission));
  session.defaultSession.setDisplayMediaRequestHandler(async(request,callback)=>{if(process.platform==='darwin'){callback({});return;}if(!captureAllowed||request.frame?.url!==indexURL){callback({});return;}try{const sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:{width:0,height:0}});if(!sources.length||!captureAllowed){callback({});return;}callback({video:sources[0],audio:'loopback'});}catch{callback({});}},{useSystemPicker:false});
+ mirror=new Mirror({executable:app.isPackaged?path.join(process.resourcesPath,'native','clair-mirror'):path.join(__dirname,'../build/native',process.arch,'clair-mirror'),displays:()=>screen.getAllDisplays(),emit:send});
+ guard('mirror:state',()=>mirror.state());guard('mirror:start',(source,target)=>mirror.start(source,target));guard('mirror:stop',()=>mirror.stop());
+ for(const event of ['display-added','display-removed','display-metrics-changed'])screen.on(event,()=>mirror.changed());
+ powerMonitor.on('lock-screen',()=>mirror.stop());
  mouse=new MouseShortcuts({executable:app.isPackaged?path.join(process.resourcesPath,'native','clair-mouse'):path.join(__dirname,'../build/native',process.arch,'clair-mouse'),emit:send,action:()=>background.toggle(),save:value=>atomic(path.join(app.getPath('userData'),'mouse.json'),value)});
  try{mouse.config=mouseConfiguration(JSON.parse(await fs.readFile(path.join(app.getPath('userData'),'mouse.json'),'utf8')));}catch{}
  guard('mouse:state',()=>mouse.state());guard('mouse:enable',enabled=>mouse.enable(enabled,true));guard('mouse:learn',action=>mouse.learn(action));guard('mouse:forget',action=>mouse.forget(action));guard('mouse:permissions',()=>shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility'));
@@ -104,9 +109,9 @@ async function setup(){
  ipcMain.on('audio:chunk',(e,data,levels)=>{if(trusted(e)&&data instanceof ArrayBuffer&&data.byteLength<=48000){const valid=levels&&[levels.systemRms,levels.micRms].every(v=>Number.isFinite(v)&&v>=0&&v<=2);engine.audio(new Uint8Array(data),valid?levels:undefined);}});
  background=registerBackgroundWindow(win,globalShortcut);win.webContents.on('did-finish-load',()=>{if(mouse.config.enabled&&mouse.available&&!mouse.child)mouse.launch(false);});
  globalShortcut.register('CommandOrControl+Shift+Space',()=>send({type:'shortcut-toggle'}));globalShortcut.register('CommandOrControl+Shift+Enter',()=>engine.manual(''));
- win.on('close',()=>{engine.stop();coding.cancel();mouse?.stop();void phone.close();});powerMonitor.on('suspend',()=>{engine.stop();coding.cancel();mouse?.stop();void phone.close();send({type:'status',text:'Écoute arrêtée à la mise en veille.'})});
+ win.on('close',()=>{mirror?.stop();engine.stop();coding.cancel();mouse?.stop();void phone.close();});powerMonitor.on('suspend',()=>{mirror?.stop();engine.stop();coding.cancel();mouse?.stop();void phone.close();send({type:'status',text:'Écoute arrêtée à la mise en veille.'})});
  win.once('ready-to-show',()=>win.show());await win.loadFile(path.join(__dirname,'index.html'));
 }
 if(!app.requestSingleInstanceLock())app.quit();else{app.on('second-instance',()=>{if(win){if(win.isMinimized())win.restore();win.show();win.focus()}});app.whenReady().then(setup).catch(()=>{dialog.showErrorBox('Clair','Impossible de démarrer Clair. Vérifiez les fichiers de l’application et les permissions locales.');app.quit()});}
 app.on('activate',()=>{if(win&&!win.isDestroyed()){if(win.isMinimized())win.restore();win.show();}});
-app.on('window-all-closed',()=>app.quit());app.on('will-quit',()=>{documents.clear();nativeAudio.shutdown();engine?.stop();coding?.cancel();void bridge?.close();void phone.close();mouse?.stop();globalShortcut.unregisterAll()});
+app.on('window-all-closed',()=>app.quit());app.on('will-quit',()=>{mirror?.stop();documents.clear();nativeAudio.shutdown();engine?.stop();coding?.cancel();void bridge?.close();void phone.close();mouse?.stop();globalShortcut.unregisterAll()});

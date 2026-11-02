@@ -6,7 +6,7 @@ export function installOverlay(api){
   queued=false;const regions=[];
   function add(rect){const x=Math.max(0,rect.left),y=Math.max(0,rect.top),right=Math.min(innerWidth,rect.right),bottom=Math.min(innerHeight,rect.bottom);if(right>x&&bottom>y)regions.push({x,y,width:right-x,height:bottom-y});}
   // Panels remain usable for typing, native menus, scrolling and PDF dropping.
-  for(const el of document.querySelectorAll('.titlebar,#files-panel,#settings-panel,#coding-panel,#coding-menu,#more-menu,button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),summary'))if(visible(el)){
+  for(const el of document.querySelectorAll('.titlebar,#files-panel,#settings-panel,#coding-panel,#coding-menu,#mirror-menu,#more-menu,button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),summary'))if(visible(el)){
    const rect=el.getBoundingClientRect(),feed=el.closest('.answer-feed');
    if(feed){const clip=feed.getBoundingClientRect();add({left:Math.max(rect.left,clip.left),right:Math.min(rect.right,clip.right),top:Math.max(rect.top,clip.top),bottom:Math.min(rect.bottom,clip.bottom)});}else add(rect);
   }

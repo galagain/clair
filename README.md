@@ -27,3 +27,5 @@ Clair écoute le son de l’ordinateur et le micro. La traduction est facultativ
 Les appels API sont facturés sur ton compte OpenAI. Les versions ne sont pas certifiées par Apple ou Microsoft : le système peut demander une autorisation d’ouverture. Clair peut apparaître si tu partages tout ton écran.
 
 [Développement](docs/DEVELOPMENT.md) · [Tests et limites](docs/VALIDATION.md) · [Toutes les versions](https://github.com/galagain/clair/releases)
+
+**Recopie sans Clair (Mac)** : le bouton aux deux écrans, en haut, reproduit un écran sur un autre en excluant Clair. [Utilisation](docs/RECOPIE.md).
