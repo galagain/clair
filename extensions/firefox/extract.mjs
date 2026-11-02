@@ -1,6 +1,6 @@
 // These two self-contained functions run only after a toolbar/shortcut action.
 // No secrets are passed to either world. Page-returned data is always untrusted.
-export function readPage(){
+export function readPage({useSelection=true}={}){
  const visible=el=>!!el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&getComputedStyle(el).display!=='none';
  const editors='.monaco-editor,.CodeMirror,.cm-editor,.ace_editor';
  const skip='script,style,noscript,template,svg,canvas,nav,header,footer,[role=navigation],input,textarea,select,button,[hidden],[aria-hidden=true]';
@@ -18,7 +18,7 @@ export function readPage(){
  const selected=window.getSelection(),anchor=selected?.anchorNode;
  // A highlighted variable in the code editor is not the problem statement.
  const inEditor=(anchor?.nodeType===Node.ELEMENT_NODE?anchor:anchor?.parentElement)?.closest(editors);
- const selection=inEditor?'':String(selected||'').slice(0,24000);
+ const selection=!useSelection||inEditor?'':String(selected||'').slice(0,24000);
  const root=[...document.querySelectorAll('main,[role=main]')].find(visible)||document.body;
  const page=root?textOf(root):{text:'',truncated:false};
  const candidates=[];

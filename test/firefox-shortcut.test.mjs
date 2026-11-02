@@ -34,3 +34,16 @@ test('Direct capture preserves warnings, avoids ambiguous editors and respects m
  assert.match(directSnapshot(capture,'cpp').warning,/manquer des lignes/);assert.equal(directSnapshot(capture,'cpp').language,'cpp');
  capture.candidates.push({code:'another file',complete:true});assert.equal(directSnapshot(capture).code,'');assert.match(directSnapshot(capture).warning,/aucun code choisi/);
 });
+
+test('Shortcut captures the whole exercise even when a previous selection remains',async()=>{
+ const {tab,api,calls}=fixture();const result=await directSender(api,async()=>Response.json({ok:true}))(tab);
+ assert.equal(result.status,'sent');assert.deepEqual(calls.find(call=>!call.world).args,[{useSelection:false}]);
+});
+test('A stuck page cannot permanently block later shortcuts or send a late capture',async()=>{
+ const {tab,api}=fixture();const execute=api.scripting.executeScript;let release,count=0;
+ api.scripting.executeScript=options=>options.world==='MAIN'?execute(options):new Promise(resolve=>release=resolve);
+ const send=directSender(api,async()=>{count++;return Response.json({ok:true});},{captureTimeoutMs:10});
+ assert.match((await send(tab)).text,/Lecture de la page bloquée/);assert.equal(count,0);
+ api.scripting.executeScript=execute;assert.equal((await send(tab)).status,'sent');assert.equal(count,1);
+ release([{frameId:0,result:{statement:'Late old exercise',candidates:[]}}]);await new Promise(resolve=>setImmediate(resolve));assert.equal(count,1);
+});

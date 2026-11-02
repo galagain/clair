@@ -76,3 +76,21 @@ test('Follow-ups receive recent suggestions and context changes clear this memor
  assert.equal(JSON.parse(requests[0].input[0].content).pistes_recentes.length,0);assert.equal(JSON.parse(requests[1].input[0].content).pistes_recentes.length,1);assert.ok(events.find(x=>x.type==='answer-start').manual);
  e.setDocuments([]);await e.manual('New context');assert.equal(JSON.parse(requests[2].input[0].content).pistes_recentes.length,0);e.clear();assert.equal(e.recentAnswers.length,0);
 });
+
+test('Oral Pistes receive the current exercise and code, with no stale context from a prior exercise',async()=>{
+ const bodies=[];const {e}=make(async(_url,options)=>{bodies.push(JSON.parse(options.body));return success();});
+ e.ledger.complete('old','Previous exercise asks about a binary tree.');await e.manual('Old question');
+ e.setCodingContext({statement:'Return two indices for a target sum.',language:'python'});
+ e.updateCodingSolution('def solve(nums, target):\n    seen = {}');
+ e.ledger.complete('new','Why use a dictionary?');await e.manual('What is the complexity?');
+ let data=JSON.parse(bodies.at(-1).input[0].content);
+ assert.match(data.coding.exercice.statement,/two indices/);assert.match(data.coding.solution,/seen/);assert.doesNotMatch(data.contexte,/binary tree/);assert.match(data.contexte,/dictionary/);assert.equal(data.pistes_recentes.length,0);
+ e.setCodingContext({statement:'Sort a list.',language:'python'});await e.manual('Why this approach?');
+ data=JSON.parse(bodies.at(-1).input[0].content);assert.equal(data.coding.solution,'');assert.equal(data.pistes_recentes.length,0);assert.doesNotMatch(JSON.stringify(data),/two indices|seen =|dictionary/);
+ e.setCodingContext(null);await e.manual('What is SQL?');assert.equal(JSON.parse(bodies.at(-1).input[0].content).coding,undefined);
+});
+test('Replacing the exercise cancels an old oral answer and ignores its delayed output',async()=>{
+ let release;const {e,events}=make(()=>new Promise(resolve=>release=resolve));
+ const pending=e.manual('Explain the old exercise');e.setCodingContext({statement:'New exercise'});release(success());await pending;
+ assert.equal(events.filter(x=>x.type==='answer-delta').length,0);assert.equal(e.history.length,0);assert.equal(e.active,null);
+});

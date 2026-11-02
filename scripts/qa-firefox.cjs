@@ -78,10 +78,12 @@ async function until(fn){let last;for(let i=0;i<80;i++){try{last=await fn();if(l
   const fallback=await until(async()=>{const value=await read();return value?.code==='VISIBLE_FRAGMENT'&&value;});assert.match(fallback.warning,/manquer des lignes/);assert.ok(!fallback.statement.includes('SECRET'));assert.equal(captures.length,2);
   await chrome("document.querySelector('browser[webextension-view-type=popup]')?.closest('panel')?.hidePopup();document.getElementById('unified-extensions-panel').hidePopup();return true;");
   await command('/moz/context',{context:'content'});await shortcut();await until(()=>captures.length===3);assert.match(captures[2].warning,/manquer des lignes/);
+  await command('/execute/sync',{script:"document.querySelector('#problem').textContent='Second exercise: reverse a linked list.';const range=document.createRange();range.selectNodeContents(document.querySelector('h1'));getSelection().removeAllRanges();getSelection().addRange(range);",args:[]});
+  await shortcut();await until(()=>captures.length===4);assert.match(captures[3].statement,/Second exercise: reverse a linked list/);
   await bridge.close();await shortcut();await pause(300);
   await command('/moz/context',{context:'chrome'});
   assert.equal(await chrome("return document.querySelector('browser[webextension-view-type=popup]')?.closest('panel')?.state==='open';"),false);
-  await until(()=>chrome("return document.querySelector('#coding_clair_galagain-BAP .toolbarbutton-badge')?.textContent==='!';"));assert.equal(captures.length,3);
+  await until(()=>chrome("return document.querySelector('#coding_clair_galagain-BAP .toolbarbutton-badge')?.textContent==='!';"));assert.equal(captures.length,4);
   console.log('Firefox QA passed: real temporary add-on, activeTab, selection, full model, partial-code warning, pairing, direct keyboard send without popup, unchanged editor and disconnected shortcut. No OpenAI requests.');
  }catch(error){try{await command('/moz/context',{context:'chrome'});console.error('Shortcut diagnostic:',await chrome("return {key:document.querySelector('#ext-keyset-id-coding_clair_galagain key')?.outerHTML,title:document.getElementById('coding_clair_galagain-BAP')?.getAttribute('tooltiptext'),badge:document.querySelector('#coding_clair_galagain-BAP .toolbarbutton-badge')?.textContent};"));}catch{}console.error(driverLog);throw error;}
  finally{if(session)await fetch(base+'/session/'+session.sessionId,{method:'DELETE'}).catch(()=>{});driver?.kill();await bridge.close();fixture.closeAllConnections();await new Promise(resolve=>fixture.close(resolve));}

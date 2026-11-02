@@ -5,6 +5,14 @@ import {TurnLedger,VoiceBoundary,possibleQuestion,parseSections,responseBody,sse
 export class InterviewEngine {
  constructor({emit,WebSocketImpl,fetchImpl=fetch}){this.emit=emit;this.WebSocket=WebSocketImpl;this.fetch=fetchImpl;this.ledger=new TurnLedger();this.listenSequence=0;this.config=normalizeConfig();this.generation=0;this.requestSeq=0;this.active=null;this.pending=[];this.history=[];this.recentAnswers=[];this.draftTimers=new Map();this.drafted=new Set();this.running=false;this.ready=false;this.audioSeconds=0;this.calls=0;this.tokens=new TokenUsage(()=>this.stats());this.key='';this.documents=[];this.lastAnswerSource='';this.sources=new SourceTurns();this.committedSources=[];this.translation=new TranslationStream({fetchImpl:(...args)=>this.fetch(...args),emit:(type,data)=>this.notify(type,data),request:()=>this.request(),beginUsage:()=>this.tokens.begin(),headers:(headers,model)=>this.tokens.headers(headers,model)});}
  credentials({key}){if(this.key!==key)this.tokens.rates.clear();this.key=key;this.stats();}
+ setCodingContext(snapshot,solution=''){
+  this.cancelAnalysis();this.pending=[];this.recentAnswers=[];
+  for(const timer of this.draftTimers.values())clearTimeout(timer);this.draftTimers.clear();this.drafted.clear();
+  this.lastAnswerSource='';this.codingContext=snapshot?{snapshot,solution}:null;this.codingPreviousTurns=new Set(this.ledger.items.keys());
+  this.notify('context-changed');
+ }
+ updateCodingSolution(solution){if(this.codingContext)this.codingContext.solution=solution;}
+ answerContext(){return this.codingContext?this.ledger.ordered().filter(t=>!this.codingPreviousTurns?.has(t.id)).map(t=>t.text).join('\n').slice(-16000):this.ledger.context();}
  setDocuments(documents){this.cancelAnalysis();this.pending=[];this.documents=documents;this.recentAnswers=[];this.notify('context-changed');}
  configure(c){this.config=normalizeConfig(c);this.stats();}
  preferences(c){
@@ -28,7 +36,7 @@ export class InterviewEngine {
   return {modelAvailable:models.includes(this.config.model),audioAvailable:models.includes('gpt-live-transcribe')};
  }
  async start(){
- if(!this.key)throw Error('Saisissez une clé API avant de démarrer.');this.stop({reset:true});this.listenSequence++;this.recentAnswers=[];this.notify('transcript-session');this.ledger.clear();this.lastAnswerSource='';this.running=true;this.ready=false;this.vad=new VoiceBoundary(this.config);this.sources.reset();this.committedSources=[];const gen=this.generation;
+ if(!this.key)throw Error('Saisissez une clé API avant de démarrer.');this.stop({reset:true});this.listenSequence++;this.recentAnswers=[];this.notify('transcript-session');this.ledger.clear();this.codingPreviousTurns?.clear();this.lastAnswerSource='';this.running=true;this.ready=false;this.vad=new VoiceBoundary(this.config);this.sources.reset();this.committedSources=[];const gen=this.generation;
  this.notify('status',{text:'Connexion à la transcription…'});
  const socket=new this.WebSocket('wss://api.openai.com/v1/realtime?intent=transcription',{headers:{Authorization:`Bearer ${this.key}`},handshakeTimeout:15000});this.socket=socket;
  await new Promise((resolve,reject)=>{let done=false;const settle=error=>{if(done)return;done=true;clearTimeout(timeout);this.startReject=null;error?reject(error):resolve();};this.startReject=()=>settle(Error('Démarrage annulé.'));const timeout=setTimeout(()=>{settle(Error('La connexion audio ne répond pas.'));this.notify('error',{text:'La connexion audio ne répond pas. Relancez l’écoute.'});this.stop();},18000);
@@ -66,7 +74,7 @@ export class InterviewEngine {
  if(!this.request())return;this.lastAnswerSource=text;const id=++this.requestSeq,gen=this.generation,controller=new AbortController();const entry={id,draft,controller,question:text,output:''};this.active=entry;const usage=this.tokens.begin();const model=this.config.model;const started=Date.now();let first=null,output='',complete=false;const timeout=setTimeout(()=>controller.abort(),45000);
  this.notify('answer-start',{id,draft,manual,text,itemId,language:this.config.answerLanguage});
  try{
- const r=await this.fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:`Bearer ${this.key}`,'Content-Type':'application/json'},body:JSON.stringify(responseBody(this.config,text,this.ledger.context(),{draft,manual,documents:this.documents,recentAnswers:this.recentAnswers})),signal:controller.signal});
+ const r=await this.fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:`Bearer ${this.key}`,'Content-Type':'application/json'},body:JSON.stringify(responseBody(this.config,text,this.answerContext(),{draft,manual,documents:this.documents,recentAnswers:this.recentAnswers,coding:this.codingContext})),signal:controller.signal});
  if(gen!==this.generation||this.active!==entry)return;this.tokens.headers(r.headers,model);
  if(!r.ok){let message='Réponse IA indisponible.';try{const d=await r.json();message=d.error?.message||message}catch{}throw Error(safeError(message,r.status));}
  if(!r.body)throw Error('Flux de réponse vide.');
@@ -83,7 +91,7 @@ export class InterviewEngine {
  }catch(err){if(gen===this.generation&&this.active===entry){this.notify('answer-error',{id,text:controller.signal.aborted?'Analyse annulée ou délai maximal atteint.':safeError(err)});}}
  finally{clearTimeout(timeout);usage.finish();if(this.active===entry){this.active=null;this.drain();}}
  }
- manual(text){const value=String(text||'').trim().slice(0,8000)||this.ledger.context(8000);if(!value){this.notify('error',{text:'Aucune parole à analyser. Saisissez une question ou démarrez l’écoute.'});return;}this.pending=[];return this.analyze(value,{manual:true});}
+ manual(text){const value=String(text||'').trim().slice(0,8000)||this.answerContext().slice(-8000);if(!value){this.notify('error',{text:'Aucune parole à analyser. Saisissez une question ou démarrez l’écoute.'});return;}this.pending=[];return this.analyze(value,{manual:true});}
  stop({reset=false}={}){this.generation++;this.translation.cancel();this.startReject?.();this.startReject=null;this.running=false;this.ready=false;for(const t of this.draftTimers.values())clearTimeout(t);this.draftTimers.clear();this.drafted.clear();this.pending=[];this.cancelAnalysis();if(this.socket){const s=this.socket;this.socket=null;s.on('error',()=>{});if(s.readyState===0)s.terminate();else s.close();}this.notify('stopped',{reset});}
  clear(){this.stop();this.ledger.clear();this.lastAnswerSource='';this.history=[];this.recentAnswers=[];this.calls=0;this.audioSeconds=0;this.tokens.reset();this.stats();this.notify('cleared');}
  exportText(){return ['CLAIR — Session',new Date().toLocaleString('fr-FR'),'\nTRANSCRIPTION',this.ledger.context(100000),'\nAIDES',...this.history.map(h=>`${h.time}\n${h.question}\n${h.answer}\n`)].join('\n');}

@@ -22,7 +22,7 @@ export async function installCoding(api,{show,toggle}){
  }
  function fill(value){snapshot=value;if(!value)return;for(const field of ['statement','code','tests','language'])$('coding-'+field).value=value[field]||'';$('coding-source').textContent=value.source||'';$('coding-warning').textContent=value.warning||'';}
  function input(){return {...snapshot,statement:$('coding-statement').value,code:$('coding-code').value,tests:$('coding-tests').value,language:$('coding-language').value};}
- function reset(){revision++;current=null;snapshot=null;busy=false;adaptId=null;canUndo=false;for(const field of ['statement','code','tests'])$('coding-'+field).value='';$('coding-source').textContent='';$('coding-warning').textContent='';$('coding-input').open=true;message('');render();feed.scrollTop=0;}
+ function reset(){revision++;current=null;snapshot=null;busy=false;adaptId=null;canUndo=false;for(const field of ['statement','code','tests'])$('coding-'+field).value='';$('coding-source').textContent='';$('coding-warning').textContent='';$('coding-input').open=true;message('');$('coding-receipt').textContent='';render();feed.scrollTop=0;}
  api.onEvent(event=>{
   if(event.type==='preferences-changed')$('coding-auto-voice').checked=event.config.codingAutoVoice;
   if(!event.type.startsWith('coding-'))return;changed=true;
@@ -31,7 +31,7 @@ export async function installCoding(api,{show,toggle}){
   if(['coding-unchanged','coding-adapt-error','coding-adapt-canceled'].includes(event.type)&&(event.id===adaptId||event.id==null)){adaptId=null;busy=false;message(event.error||(event.manual?'Code déjà adapté aux échanges.':''));controls();return;}
   if(event.type==='coding-start'){
    revision++;adaptId=null;canUndo=false;current={...event.item};fill(event.snapshot);busy=true;closeMenu();show();$('coding-input').open=false;$('coding-browser').open=false;
-   message('Résolution…');render();feed.scrollTop=0;
+   $('coding-receipt').textContent='Reçu · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+(snapshot.source?' · '+snapshot.source:'');$('coding-receipt').title=snapshot.title||'Exercice reçu';message('Résolution…');render();feed.scrollTop=0;
   }
   if(event.type==='coding-delta'&&event.id===current?.id){current.text=event.text;render();}
   if(['coding-done','coding-error','coding-canceled'].includes(event.type)&&event.id===current?.id){current.state=event.type.slice(7);current.error=event.error;busy=false;message(event.error||(current.state==='canceled'?'Arrêtée.':''));render();}

@@ -161,3 +161,5 @@ body.compact:not(.settings-open) .answer-feed{max-height:180px}
 .section-toolbar #mirror-toggle{flex:none;width:28px;height:28px}.section-toolbar #mirror-toggle[aria-pressed=true]{color:var(--accent);background:rgba(142,219,220,.1)}.mirror-menu{position:fixed;z-index:12;top:var(--mirror-menu-top,98px);left:12px;width:min(340px,calc(100vw - 24px));max-height:calc(100vh - var(--mirror-menu-top,98px) - 12px);overflow:auto;padding:12px;border-radius:12px;background:rgba(23,31,41,.98)}.mirror-menu h2{font-size:13px;margin:0}.mirror-menu .button-row{flex-wrap:wrap}
 
 .coding-result-toolbar{display:flex;justify-content:flex-end;height:23px;margin:-6px -5px 3px 0}.coding-result-toolbar .icon-button{width:24px;height:24px}.coding-result-toolbar .icon{width:14px;height:14px}
+
+#coding-receipt{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--faint);align-self:center}.coding-result-toolbar{gap:6px}

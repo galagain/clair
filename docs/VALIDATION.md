@@ -31,3 +31,5 @@ Les versions ne sont pas signées avec un certificat de distribution : signature
 Le suivi vocal Coding est testé avec des transcriptions et une API simulées : source micro seule, regroupement, temporisation, annulation, réponse atomique, absence de changement, erreur, remplacement par une nouvelle capture et retour à la version précédente. Aucun appel API réel ni test de pertinence avec la voix de l’utilisateur.
 
 Recopie Mac : module Swift compilé et contrôle interne sans capture ; tests du contrôleur (écrans invalides, permissions, arrêt, expiration, messages incorrects) et de l’interface avec un module simulé (sélection, activation, arrière-plan, débranchement, verrouillage). Pas de capture ni de validation des pixels sur deux écrans réels.
+
+Envois successifs Coding : tests de page bloquée puis reprise sans capture tardive, raccourci ignorant une ancienne sélection, remplacement du contexte oral par le nouvel exercice et rejet d’une ancienne réponse retardée. Les tests utilisent des exercices, transcriptions et API simulés ; la cause exacte du texte hors sujet signalé par l’utilisateur n’a pas été enregistrée.
