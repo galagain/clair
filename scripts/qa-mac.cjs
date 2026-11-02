@@ -231,6 +231,7 @@ const os=require('node:os');
    };
   });
   await page.locator('#audio-test').click();await page.waitForFunction(()=>document.body.dataset.sessionStatus?.includes('Ordinateur ✓ · Micro ✓'));
+  await page.evaluate(()=>window.clair.background());assert.equal(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].isVisible()),false);const hiddenAudioTime=await page.evaluate(()=>window.qaAudio.ctx.currentTime);await page.waitForFunction(time=>window.qaAudio.ctx.currentTime>time+.15,hiddenAudioTime);assert.equal(await page.evaluate(()=>window.qaAudio.stream.getTracks().every(t=>t.readyState==='live')),true);await app.evaluate(({app})=>app.emit('activate'));assert.equal(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].isVisible()),true);
   assert.equal((await page.evaluate(()=>window.clair.config())).hasKey,false);assert.equal(await page.locator('#answer-language').inputValue(),'fr');assert.equal(await page.locator('#answer-language option[value=auto]').count(),0);
   await page.locator('#listen').click();await page.waitForFunction(()=>document.querySelector('#listen').textContent.includes('Démarrer'));
   assert.equal(await page.evaluate(()=>window.qaAudio.stream.getTracks().every(t=>t.readyState==='ended')),true);

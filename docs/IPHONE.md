@@ -1,12 +1,12 @@
 # Clair sur iPhone
 
-1. Ouvre Clair sur ton Mac ou PC et connecte l’iPhone au **même Wi-Fi**.
+1. Ouvre Clair sur ton Mac ou PC et connecte l’iPhone au **même réseau local**. Le Mac peut être en Ethernet et l’iPhone en Wi-Fi. Si plusieurs adresses sont proposées, sélectionne dans Clair le réseau utilisé par l’ordinateur.
 2. Dans Clair, ouvre **Réglages → iPhone → Connecter**.
 3. Scanne le QR code avec l’appareil photo de l’iPhone et ouvre le lien dans **Safari**.
 
-Tu retrouves **Pistes**, **Discours**, **Traduction** si elle est activée, et **Coding**. **A− / A+** règlent la taille du texte. Les pistes continuent de s’ajouter ; remonte pour relire, puis touche **Au direct**. Chaque nouveau raccourci Firefox remplace la solution Coding, sur les deux écrans. Le code se fait défiler horizontalement si une ligne est trop longue.
+Les quatre icônes en haut affichent ou masquent **Discours**, **Pistes**, **Traduction** et **Code**. Chaque section a sa carte, empilée sous les autres, et son propre défilement. Plusieurs sections peuvent rester ouvertes. Ton choix est conservé lors du rechargement de cet onglet Safari. **A− / A+** règlent la taille du texte. Remonte dans une carte pour relire, puis touche sa flèche **↓** pour revenir au direct. Une section masquée continue de recevoir son contenu sans se rouvrir. L’icône Traduction règle seulement son affichage : la traduction doit être activée dans Clair sur l’ordinateur. Chaque nouveau raccourci Firefox remplace la solution Coding, sur les deux écrans. Le code se fait défiler horizontalement si une ligne est trop longue.
 
-Clair doit rester ouvert sur l’ordinateur, qui écoute le son et appelle l’IA. Tu peux réduire sa fenêtre avec **… → Réduire la fenêtre**. L’iPhone sert d’écran de lecture : les réglages, les fichiers et les commandes restent sur l’ordinateur. Garde Safari au premier plan et l’écran de l’iPhone allumé pour suivre le direct. Au retour dans Safari, la page récupère l’affichage actuel.
+Clair doit rester ouvert sur l’ordinateur, qui écoute le son et appelle l’IA. Utilise **⌘ ⇧ H sur Mac** ou **Ctrl ⇧ H sur Windows** pour masquer ou réafficher sa fenêtre sans arrêter l’écoute ni l’affichage iPhone. La commande **… → Passer en arrière-plan** est aussi disponible. Rouvrir Clair (ou cliquer sur son icône du Dock sur Mac) réaffiche sa fenêtre. Si le raccourci est déjà occupé, le menu indique « Raccourci indisponible » ; la commande du menu fonctionne toujours. L’iPhone sert d’écran de lecture : les réglages, les fichiers et les commandes restent sur l’ordinateur. Garde Safari au premier plan et l’écran de l’iPhone allumé pour suivre le direct. Au retour dans Safari, la page récupère l’affichage actuel.
 
 ## Connexion
 
@@ -19,6 +19,6 @@ Clair doit rester ouvert sur l’ordinateur, qui écoute le son et appelle l’I
 
 Si la page ne s’ouvre pas, vérifie le Wi-Fi, autorise Clair à recevoir les connexions locales dans le pare-feu et évite le réseau invité qui isole les appareils. Si plusieurs réseaux sont proposés dans Clair, choisis celui de ton iPhone. Après un changement de réseau, déconnecte puis reconnecte l’affichage.
 
-Vérifié dans WebKit au format iPhone avec des données synthétiques. L’ouverture du QR code et la connexion sur un iPhone physique restent à tester.
+Connexion à un iPhone physique confirmée par l’utilisateur avec le Mac en Ethernet. Les nouvelles cartes et leurs défilements sont vérifiés dans WebKit au format iPhone avec des données synthétiques.
 
 Le direct utilise l’[API WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket). Le QR code est généré localement avec [qrcode](https://www.npmjs.com/package/qrcode), sans service externe.

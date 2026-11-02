@@ -32,6 +32,7 @@ const pdfFixture=require('../test/pdf-fixture.cjs');
   await page.locator('#settings-tab').click();await page.locator('#audio-test').click();
   await page.waitForFunction(()=>document.body.dataset.sessionStatus?.includes('Ordinateur ✓ · Micro ✓'));
   assert.equal(await page.evaluate(()=>window.qaSystemAttempts),3);
+  await page.evaluate(()=>window.clair.background());assert.equal(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].isVisible()),false);const time=await page.evaluate(()=>window.qaSignals[0].ctx.currentTime);await page.waitForFunction(time=>window.qaSignals[0].ctx.currentTime>time+.15,time);assert.equal(await page.evaluate(()=>window.qaSignals.every(s=>s.stream.getTracks().every(t=>t.readyState==='live'))),true);await page.evaluate(()=>window.clair.background());assert.equal(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].isVisible()),true);
   await page.locator('#listen').click();
   assert.equal(await page.evaluate(()=>window.qaSignals.every(s=>s.stream.getTracks().every(t=>t.readyState==='ended'))),true);
   await page.evaluate(async()=>{for(const s of window.qaSignals){s.oscillator.stop();await s.ctx.close();}});

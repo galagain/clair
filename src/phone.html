@@ -1,7 +1,16 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#111820"><meta name="apple-mobile-web-app-capable" content="yes"><title>Clair</title><link rel="stylesheet" href="/phone.css"></head><body>
 <header><strong>clair<span>.</span></strong><span id="connection" role="status">Connexion…</span><button id="smaller" aria-label="Réduire le texte">A−</button><button id="larger" aria-label="Agrandir le texte">A+</button></header>
-<nav aria-label="Affichage"><button data-tab="answers" aria-selected="true">Pistes</button><button data-tab="speech">Discours</button><button data-tab="translation" hidden>Traduction</button><button data-tab="coding">Coding</button></nav>
-<div id="language"></div>
-<main id="feed" tabindex="0"><div id="answers"></div><div id="speech" hidden></div><div id="translation" hidden></div><div id="coding" hidden><p id="coding-status" role="status"></p><pre id="solution"></pre></div></main>
-<p id="empty">En attente de Clair.</p><button id="resume" hidden>Au direct ↓</button>
+<nav aria-label="Sections visibles">
+<button data-panel="speech" aria-label="Discours" title="Discours" aria-pressed="true" aria-controls="speech-card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="12" width="4" height="8" rx="2"/><rect x="17" y="12" width="4" height="8" rx="2"/></svg></button>
+<button data-panel="answers" aria-label="Pistes" title="Pistes" aria-pressed="true" aria-controls="answers-card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 6.2L21 12l-6.2 2.8L12 21l-2.8-6.2L3 12l6.2-2.8Z"/></svg></button>
+<button data-panel="translation" aria-label="Traduction" title="Traduction" aria-pressed="true" aria-controls="translation-card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h11M8 3v2m4 0c-1 5-4 8-9 10m2-7c1 3 4 5 7 6m1 6 4-11 4 11m-6-4h4"/></svg></button>
+<button data-panel="coding" aria-label="Code" title="Code" aria-pressed="true" aria-controls="coding-card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 6-6 6 6 6m8-12 6 6-6 6M14 4l-4 16"/></svg></button>
+</nav>
+<main id="feed">
+<section id="speech-card" class="card" aria-labelledby="speech-heading"><div class="card-heading"><h2 id="speech-heading">Discours</h2><span id="speech-language"></span><button id="speech-resume" aria-label="Revenir au discours en direct" hidden>↓</button></div><div id="speech" class="card-feed" tabindex="0"></div><p id="speech-empty" class="empty">En attente de parole.</p></section>
+<section id="answers-card" class="card" aria-labelledby="answers-heading"><div class="card-heading"><h2 id="answers-heading">Pistes</h2><span id="answers-language"></span><button id="answers-resume" aria-label="Revenir aux pistes en direct" hidden>↓</button></div><div id="answers" class="card-feed" tabindex="0"></div><p id="answers-empty" class="empty">En attente d’une piste.</p></section>
+<section id="translation-card" class="card" aria-labelledby="translation-heading"><div class="card-heading"><h2 id="translation-heading">Traduction</h2><span id="translation-language"></span><button id="translation-resume" aria-label="Revenir à la traduction en direct" hidden>↓</button></div><div id="translation" class="card-feed" tabindex="0"></div><p id="translation-empty" class="empty">Traduction désactivée dans Clair.</p></section>
+<section id="coding-card" class="card" aria-labelledby="coding-heading"><div class="card-heading"><h2 id="coding-heading">Code</h2><span id="coding-status" role="status"></span></div><div id="coding" class="card-feed" tabindex="0"><pre id="solution"></pre></div><p id="coding-empty" class="empty">En attente d’une solution.</p></section>
+<p id="empty" class="empty" hidden>Choisissez une section avec les icônes.</p>
+</main>
 <script type="module" src="/phone.mjs"></script></body></html>

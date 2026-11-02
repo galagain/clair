@@ -1,0 +1,7 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {registerBackgroundWindow,BACKGROUND_ACCELERATOR} from '../src/background-window.cjs';
+function fixture({registered=true,minimized=false,visible=true}={}){let callback,destroyed=false;const calls=[];const win={isDestroyed:()=>destroyed,isVisible:()=>visible,isMinimized:()=>minimized,hide(){calls.push('hide');visible=false;},restore(){calls.push('restore');minimized=false;},show(){calls.push('show');visible=true;}};const background=registerBackgroundWindow(win,{register(key,fn){assert.equal(key,BACKGROUND_ACCELERATOR);callback=fn;return registered;}});return {background,calls,press:()=>callback(),destroy:()=>{destroyed=true;}};}
+test('Global background shortcut hides and restores the same window without closing it',()=>{const f=fixture();assert.equal(f.background.registered,true);assert.equal(f.press(),true);assert.equal(f.press(),false);assert.deepEqual(f.calls,['hide','show']);});
+test('Background shortcut restores a minimized window and ignores a destroyed window',()=>{const f=fixture({minimized:true});f.press();assert.deepEqual(f.calls,['restore','show']);f.destroy();f.press();assert.deepEqual(f.calls,['restore','show']);});
+test('Menu toggle remains available when another app owns the global shortcut',()=>{const f=fixture({registered:false});assert.equal(f.background.registered,false);f.background.toggle();assert.deepEqual(f.calls,['hide']);});

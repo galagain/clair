@@ -1,6 +1,6 @@
-Clair 0.20.0 : **l’affichage est disponible sur iPhone**. Dans Clair, ouvrir **Réglages → iPhone → Connecter**, puis scanner le QR code avec l’iPhone sur le même Wi-Fi. Safari affiche les pistes, le discours, la traduction facultative et la solution Coding en direct. Le raccourci Firefox continue de fonctionner. [Guide iPhone](https://github.com/galagain/clair/blob/main/docs/IPHONE.md).
+Clair 0.21.0 : **quatre icônes sur iPhone pour afficher ou masquer Discours, Pistes, Traduction et Code**. Les cartes visibles sont empilées, avec un défilement indépendant. Une nouvelle réponse ne rouvre pas une carte masquée. Le choix est conservé au rechargement de l’onglet Safari.
 
-Clair doit rester ouvert sur l’ordinateur, qui gère l’audio et les appels IA. La clé API reste sur l’ordinateur. Utiliser un Wi-Fi de confiance : le lien local donne accès à l’affichage et le transport n’est pas chiffré. Déconnecter, quitter Clair ou mettre l’ordinateur en veille révoque le lien. L’extension actuelle reste compatible.
+**⌘ ⇧ H sur Mac / Ctrl ⇧ H sur Windows** masque ou réaffiche Clair sans arrêter l’écoute ni la connexion iPhone. La commande est également dans **… → Passer en arrière-plan**. Mettre à jour Clair puis reconnecter l’iPhone avec le nouveau QR code ; l’extension Firefox actuelle reste compatible. [Guide iPhone](https://github.com/galagain/clair/blob/main/docs/IPHONE.md).
 
 - **Clair-Mac-arm64.dmg** : Mac Apple Silicon, macOS 15 minimum. Glisser Clair dans Applications.
 - **Clair-Windows-x64.exe** : Windows 10/11 64 bits. Ouvrir directement le fichier.
@@ -8,6 +8,6 @@ Clair doit rester ouvert sur l’ordinateur, qui gère l’audio et les appels I
 
 L’extension n’est pas signée par Mozilla : la recharger à chaque démarrage de Firefox. Les envois ont lieu uniquement au raccourci ou au clic « Envoyer et analyser ». Aucun code exécuté ou soumis. Certains éditeurs n’exposent que les lignes visibles ; un avertissement accompagne alors la capture.
 
-Tests unitaires et applications empaquetées vérifiés avec une API simulée. Affichage mobile vérifié avec WebKit au format iPhone ; aucun test sur iPhone physique. Extension testée sur Firefox Mac avec une page synthétique. Aucun appel OpenAI réel ; CoderPad, les réponses réelles et les permissions de visio restent à valider en situation.
+Tests unitaires et applications empaquetées vérifiés avec une API simulée. Affichage mobile vérifié avec WebKit au format iPhone ; la connexion réelle a été confirmée par l’utilisateur, les nouvelles cartes restent à vérifier sur iPhone physique. Extension testée sur Firefox Mac avec une page synthétique. Aucun appel OpenAI réel ; CoderPad, les réponses réelles et les permissions de visio restent à valider en situation.
 
 Applications sans certificat de distribution : macOS ou Windows peut demander une autorisation. Clair peut apparaître lors du partage de tout l’écran.
