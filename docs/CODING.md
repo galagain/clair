@@ -1,13 +1,13 @@
 # Coding + Firefox
 
-1. Dans **Clair → Coding → Firefox**, clique sur **Ouvrir l’extension**.
+1. Dans **Clair → … → Réglages Coding → Firefox**, clique sur **Ouvrir l’extension**.
 2. Dans Firefox 140 ou plus récent, ouvre `about:debugging#/runtime/this-firefox`, clique sur **Charger un module complémentaire temporaire**, puis choisis `manifest.json` dans ce dossier. Le ZIP `Clair-Firefox.zip` convient aussi.
 3. Dans Clair, clique sur **Copier le code**. Ouvre l’extension, colle-le dans **Connexion à Clair**, puis clique sur **Connecter**. Ce code relie les deux applications ; ce n’est pas ta clé API.
 4. Sur la page d’exercice, sélectionne de préférence l’énoncé puis presse **Alt ⇧ C** : l’extension envoie immédiatement l’énoncé, le code accessible et les sorties de tests à Clair, qui affiche la solution. Aucun popup Firefox ne s’ouvre. Pour contrôler ou modifier le contenu avant l’envoi, clique plutôt sur l’icône de l’extension et utilise **Envoyer et analyser**.
 
 Le raccourci fonctionne lorsque Firefox a le focus. Il est modifiable dans `about:addons` → roue dentée → **Gérer les raccourcis des extensions**. En cas d’échec, un **!** apparaît sur l’icône ; le détail est accessible en ouvrant l’extension. Aucune notification système ni fenêtre ne s’ouvre automatiquement. Le raccourci ne rend pas Clair invisible dans un partage d’écran.
 
-L’onglet **Coding** affiche uniquement la solution, sans explications. Chaque raccourci remplace la précédente et annule sa génération si elle est encore en cours. **Résoudre** utilise le contenu envoyé ou modifié dans Clair. **Copier** copie la solution avec son indentation. **Effacer** retire l’exercice et la solution ; l’export de session inclut seulement la solution actuelle.
+L’onglet **Coding** affiche uniquement la solution, sans explications. Chaque raccourci remplace la précédente et annule sa génération si elle est encore en cours. Les réglages et commandes sont dans **… → Réglages Coding**, en haut de Clair. **Résoudre** utilise le contenu envoyé ou modifié dans Clair. **Copier** copie la solution avec son indentation. **Effacer** retire l’exercice et la solution ; l’export de session inclut seulement la solution actuelle.
 
 L’aide utilise le modèle et la clé déjà configurés dans Clair. Python et C++ sont sélectionnables. Si une information indispensable manque, une courte question remplace le code. Le micro n’est pas nécessaire.
 

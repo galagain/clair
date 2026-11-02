@@ -148,3 +148,7 @@ body.compact:not(.settings-open) .answer-feed{max-height:180px}
 .titlebar{height:auto;min-height:42px;flex-wrap:wrap;padding-top:6px;padding-bottom:6px}.section-switches{display:flex;gap:6px;width:100%;padding-top:4px;border-top:1px solid var(--line);-webkit-app-region:no-drag}.titlebar .section-switches .icon-button{flex:1;height:28px}.section-switches [aria-pressed=true],.section-switches [aria-checked=true]{color:var(--accent);background:rgba(142,219,220,.1)}#coding-panel{margin-top:9px}#speech-card[hidden],#answer-card[hidden]{display:none!important}
 
 #mouse-section{margin-bottom:18px}.mouse-binding{display:flex;gap:6px;align-items:center;margin-top:10px}.mouse-binding>span{flex:1}.mouse-binding .secondary{min-width:95px}
+
+.coding-menu{position:fixed;z-index:11;top:var(--coding-menu-top,98px);right:12px;width:min(360px,calc(100vw - 24px));max-height:calc(100vh - var(--coding-menu-top,98px) - 12px);overflow:auto;overscroll-behavior:contain;padding:12px;border-radius:12px;background:rgba(23,31,41,.98)}
+.coding-menu h2{margin:0;font-size:13px}.coding-menu .coding-selects{margin-left:auto}.coding-menu .button-row{flex-wrap:wrap}.coding-menu textarea{max-width:100%}.coding-menu .coding-heading{position:sticky;top:-12px;background:rgba(23,31,41,.98);padding:4px 0;z-index:1}
+#coding-panel .coding-code-block{margin:0}#coding-panel #coding-status{margin:0 0 6px}

@@ -3,7 +3,15 @@ import {codingSolution} from './coding-core.mjs';
 export async function installCoding(api,{show,toggle}){
  const $=id=>document.getElementById(id),feed=$('coding-feed'),solution=$('coding-solution');
  let current=null,snapshot=null,busy=false,changed=false,revision=0;
- const message=text=>{$('coding-status').textContent=text;};
+ const menu=$('coding-menu'),trigger=$('coding-menu-toggle');
+ function closeMenu(focus=false){menu.hidden=true;trigger.setAttribute('aria-expanded','false');if(focus)$('more-toggle').focus();}
+ function positionMenu(){menu.style.setProperty('--coding-menu-top',Math.ceil(document.querySelector('.titlebar').getBoundingClientRect().bottom+6)+'px');}
+ trigger.onclick=()=>{api.preserveSize();positionMenu();menu.hidden=false;trigger.setAttribute('aria-expanded','true');$('coding-language').focus();};
+ $('coding-menu-close').onclick=()=>closeMenu(true);
+ document.addEventListener('pointerdown',event=>{if(!event.target.closest('#coding-menu,#coding-menu-toggle'))closeMenu();});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!menu.hidden){event.stopImmediatePropagation();closeMenu(true);}},true);
+ window.addEventListener('resize',positionMenu);window.addEventListener('scroll',positionMenu);
+ const message=text=>{$('coding-status').textContent=text;$('coding-menu-status').textContent=text;};
  function controls(){$('coding-stop').hidden=!busy;$('coding-copy').disabled=!codingSolution(current?.text).trim();}
  function fit(){if($('coding-panel').hidden)return;const value=Math.max(100,Math.min(600,innerHeight-feed.getBoundingClientRect().top-24))+'px';if(feed.style.maxHeight!==value)feed.style.maxHeight=value;}
  new ResizeObserver(fit).observe($('coding-panel'));window.addEventListener('resize',fit);
@@ -18,7 +26,7 @@ export async function installCoding(api,{show,toggle}){
  api.onEvent(event=>{
   if(!event.type.startsWith('coding-'))return;changed=true;
   if(event.type==='coding-start'){
-   revision++;current={...event.item};fill(event.snapshot);busy=true;show();$('coding-input').open=false;$('coding-browser').open=false;
+   revision++;current={...event.item};fill(event.snapshot);busy=true;closeMenu();show();$('coding-input').open=false;$('coding-browser').open=false;
    message('Résolution…');render();feed.scrollTop=0;
   }
   if(event.type==='coding-delta'&&event.id===current?.id){current.text=event.text;render();}
