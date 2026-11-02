@@ -14,6 +14,8 @@ npm start
 npm test
 npm run check
 npm run qa:coding # application isolée, API simulée
+npx playwright install webkit
+npm run qa:phone # WebKit au format iPhone, réseau de test local
 ```
 
 ## Construire

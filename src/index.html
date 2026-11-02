@@ -87,6 +87,12 @@
 </main>
 <main id="settings-panel" class="panel glass" hidden>
 
+ <details id="phone-section" class="settings-group"><summary>iPhone</summary>
+  <p id="phone-status" class="file-hint" role="status">Même Wi-Fi · Clair reste ouvert sur l’ordinateur.</p>
+  <select id="phone-network" aria-label="Réseau local" hidden></select>
+  <div class="button-row"><button id="phone-start" class="secondary">Connecter</button><button id="phone-stop" class="text-button" hidden>Déconnecter</button></div>
+  <div id="phone-pairing" hidden><img id="phone-qr" width="200" height="200" alt="QR code de connexion à Clair"><input id="phone-link" readonly aria-label="Lien iPhone"><button id="phone-copy" class="text-button">Copier le lien</button><p class="file-hint">Wi-Fi de confiance uniquement. Le lien donne accès à l’affichage ; la connexion locale n’est pas chiffrée.</p></div>
+ </details>
  <section class="key-section"><h2>Clé API</h2>
  <input id="key" type="password" maxlength="512" autocomplete="off" spellcheck="false" placeholder="sk-…" aria-label="Clé API OpenAI">
  <div class="key-actions"><button id="save-key">Enregistrer</button><button id="test-key">Vérifier</button><button id="forget-key">Oublier</button></div><p id="key-result" role="status"></p></section>

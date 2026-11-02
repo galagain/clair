@@ -1,0 +1,7 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#111820"><meta name="apple-mobile-web-app-capable" content="yes"><title>Clair</title><link rel="stylesheet" href="/phone.css"></head><body>
+<header><strong>clair<span>.</span></strong><span id="connection" role="status">Connexion…</span><button id="smaller" aria-label="Réduire le texte">A−</button><button id="larger" aria-label="Agrandir le texte">A+</button></header>
+<nav aria-label="Affichage"><button data-tab="answers" aria-selected="true">Pistes</button><button data-tab="speech">Discours</button><button data-tab="translation" hidden>Traduction</button><button data-tab="coding">Coding</button></nav>
+<div id="language"></div>
+<main id="feed" tabindex="0"><div id="answers"></div><div id="speech" hidden></div><div id="translation" hidden></div><div id="coding" hidden><p id="coding-status" role="status"></p><pre id="solution"></pre></div></main>
+<p id="empty">En attente de Clair.</p><button id="resume" hidden>Au direct ↓</button>
+<script type="module" src="/phone.mjs"></script></body></html>

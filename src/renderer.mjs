@@ -5,6 +5,7 @@ import {AnswerHistory} from './answer-history.mjs';
 import {AnswerFeed} from './answer-feed.mjs';
 import {TextFeed} from './text-feed.mjs';
 import {AudioCapture} from './capture.mjs';
+import {installPhone} from './phone-view.mjs';
 import {installCoding} from './coding-view.mjs';
 const api=window.clair,$=id=>document.getElementById(id);let config,hasKey=false,running=false,starting=false,diagnostic=false,diagnosticTimer=null,signalSeen=false,clock=null,elapsed=0,listenEpoch=0,answerId=null,compact=false,testing=false,demoTimer=null,lastSignal=0,silenceWarning=null,audioStatus='Audio automatique · ordinateur + micro',diagnosticSources={system:false,mic:false};
 const capture=new AudioCapture({mediaDevices:navigator.mediaDevices,AudioContextImpl:AudioContext,WorkletImpl:AudioWorkletNode});
@@ -134,3 +135,13 @@ $('clear-files').onclick=async()=>{try{renderFiles(await api.clearFiles());ui('f
 
 installOverlay(api);
 await installCoding(api,{show:()=>showView('coding'),toggle:()=>showView(view==='coding'?'session':'coding')});
+
+const phoneIds=new WeakMap();let phoneSequence=0;
+function phoneParagraphs(id){const items=[...$(id).querySelectorAll('.feed-paragraph,.feed-live')].map(node=>{if(!phoneIds.has(node))phoneIds.set(node,String(++phoneSequence));return {id:phoneIds.get(node),text:node.textContent,source:node.dataset.source};});return items.length||id!=='transcript'||$('transcript-state').textContent!=='EXEMPLE'?items:[{id:'demo',text:$(id).textContent}];}
+await installPhone(api,{snapshot:()=>({
+ view,translationEnabled:config.translationEnabled,
+ languages:{speech:LANGUAGES[config.transcriptionLanguage],translation:LANGUAGES[config.translationLanguage],answers:LANGUAGES[config.answerLanguage]},
+ speech:phoneParagraphs('transcript'),translation:phoneParagraphs('translation'),
+ answers:history.visible().length?history.visible().map(item=>({id:String(item.id),text:plainAnswer(item.answer)})):displayedAnswer?[{id:'demo',text:plainAnswer(displayedAnswer)}]:[],
+ coding:{id:$('coding-solution').dataset.id||'',text:$('coding-solution').textContent,status:$('coding-status').textContent}
+})});

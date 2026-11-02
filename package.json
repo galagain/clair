@@ -1,6 +1,6 @@
 {
   "name": "clair-desktop",
-  "version": "0.19.5",
+  "version": "0.20.0",
   "private": true,
   "description": "Transcription et assistance aux entretiens en visio",
   "author": "Clair",
@@ -21,10 +21,12 @@
     "verify:package": "node scripts/verify-package.cjs",
     "dist:firefox": "node scripts/package-firefox.cjs",
     "qa:coding": "node scripts/qa-coding.cjs",
-    "qa:firefox": "node scripts/qa-firefox.cjs"
+    "qa:firefox": "node scripts/qa-firefox.cjs",
+    "qa:phone": "node scripts/qa-phone.cjs"
   },
   "dependencies": {
     "pdf-parse": "2.4.5",
+    "qrcode": "1.5.4",
     "ws": "8.22.0"
   },
   "devDependencies": {
@@ -56,6 +58,7 @@
       ],
       "category": "public.app-category.productivity",
       "extendInfo": {
+        "NSLocalNetworkUsageDescription": "Clair affiche vos transcriptions et réponses sur votre iPhone via le réseau local, lorsque vous activez la connexion.",
         "NSMicrophoneUsageDescription": "Clair utilise le microphone uniquement lorsque vous démarrez l’écoute.",
         "NSAudioCaptureUsageDescription": "Clair transcrit le son de votre visio pour proposer une aide en français.",
         "NSScreenCaptureUsageDescription": "Clair utilise la capture du système pour récupérer le son de la visio. Aucune image n’est envoyée."

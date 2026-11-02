@@ -18,6 +18,8 @@ Clair écoute le son de l’ordinateur et le micro. La traduction est facultativ
 
 **Coding** : colle un énoncé et du code, ou utilise **Alt ⇧ C** dans Firefox pour les envoyer directement à Clair, sans popup. La solution seule s’affiche dans Clair ; chaque nouvel envoi remplace la précédente. [Installer l’extension et l’utiliser](docs/CODING.md).
 
+**Sur iPhone** : mets les deux appareils sur le même Wi-Fi, puis ouvre **Réglages → iPhone → Connecter** dans Clair et scanne le QR code. L’affichage se met à jour dans Safari ; Clair doit rester ouvert sur l’ordinateur. [Guide](docs/IPHONE.md).
+
 Les appels API sont facturés sur ton compte OpenAI. Les versions ne sont pas certifiées par Apple ou Microsoft : le système peut demander une autorisation d’ouverture. Clair peut apparaître si tu partages tout ton écran.
 
 [Développement](docs/DEVELOPMENT.md) · [Tests et limites](docs/VALIDATION.md) · [Toutes les versions](https://github.com/galagain/clair/releases)

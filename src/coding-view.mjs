@@ -9,7 +9,7 @@ export async function installCoding(api,{show,toggle}){
  new ResizeObserver(fit).observe($('coding-panel'));window.addEventListener('resize',fit);
  function render(){
   const text=codingSolution(current?.text),top=feed.scrollTop;
-  solution.textContent=text;solution.hidden=!text;$('coding-empty').hidden=busy||!!text;
+  solution.dataset.id=current?String(current.id):'';solution.textContent=text;solution.hidden=!text;$('coding-empty').hidden=busy||!!text;
   controls();fit();feed.scrollTop=top;
  }
  function fill(value){snapshot=value;if(!value)return;for(const field of ['statement','code','tests','language'])$('coding-'+field).value=value[field]||'';$('coding-source').textContent=value.source||'';$('coding-warning').textContent=value.warning||'';}

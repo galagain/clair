@@ -142,3 +142,5 @@ body.compact:not(.settings-open) .answer-feed{max-height:180px}
 #coding-feed{max-height:420px;overflow:auto;overflow-anchor:none;scrollbar-gutter:stable;min-height:24px}.coding-empty{color:var(--muted);font-size:12px;line-height:1.6;margin:5px 0}
 .coding-code-block{margin:10px 0 0;padding:0;font:13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;tab-size:4;color:var(--text)}
 @media(max-width:360px){.opacity-control #opacity{width:32px}.titlebar .icon-button{width:23px}.coding-actions .secondary{padding:6px}.coding-selects{gap:3px}}
+
+#phone-section{margin-bottom:18px}#phone-qr{display:block;margin:14px auto 8px;border-radius:10px}#phone-link{font-size:11px}#phone-pairing .file-hint{font-size:11px}
