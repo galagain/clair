@@ -18,7 +18,7 @@ Les quatre icônes du haut affichent ou masquent Discours, Pistes, Traduction et
 
 Clair écoute le son de l’ordinateur et le micro. La traduction est facultative. Les nouvelles pistes s’ajoutent sous les anciennes ; remonte pour relire et clique sur **↓** pour revenir au direct.
 
-**Coding** : ouvre **… → Réglages Coding** pour coller un énoncé et du code, ou utilise **Alt ⇧ C** dans Firefox pour les envoyer directement à Clair, sans popup. La solution seule s’affiche dans Clair ; chaque nouvel envoi remplace la précédente. [Installer l’extension et l’utiliser](docs/CODING.md).
+**Coding** : ouvre **bouton ⌄ à côté de Code → Réglages Coding** pour coller un énoncé et du code, ou utilise **Alt ⇧ C** dans Firefox pour les envoyer directement à Clair, sans popup. La solution seule s’affiche dans Clair ; chaque nouvel envoi remplace la précédente. [Installer l’extension et l’utiliser](docs/CODING.md).
 
 **Sur iPhone** : mets les deux appareils sur le même réseau local (Mac en Ethernet possible), puis ouvre **Réglages → iPhone → Connecter** dans Clair et scanne le QR code. Les quatre icônes affichent ou masquent des cartes empilées. **⌘ ⇧ H** sur Mac ou **Ctrl ⇧ H** sur Windows masque/réaffiche Clair sans arrêter l’écoute. [Guide](docs/IPHONE.md).
 

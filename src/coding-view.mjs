@@ -4,9 +4,9 @@ export async function installCoding(api,{show,toggle}){
  const $=id=>document.getElementById(id),feed=$('coding-feed'),solution=$('coding-solution');
  let current=null,snapshot=null,busy=false,changed=false,revision=0;
  const menu=$('coding-menu'),trigger=$('coding-menu-toggle');
- function closeMenu(focus=false){menu.hidden=true;trigger.setAttribute('aria-expanded','false');if(focus)$('more-toggle').focus();}
+ function closeMenu(focus=false){menu.hidden=true;trigger.setAttribute('aria-expanded','false');if(focus)trigger.focus();}
  function positionMenu(){menu.style.setProperty('--coding-menu-top',Math.ceil(document.querySelector('.titlebar').getBoundingClientRect().bottom+6)+'px');}
- trigger.onclick=()=>{api.preserveSize();positionMenu();menu.hidden=false;trigger.setAttribute('aria-expanded','true');$('coding-language').focus();};
+ trigger.onclick=()=>{if(!menu.hidden){closeMenu();return;}$('more-menu').hidden=true;$('more-toggle').setAttribute('aria-expanded','false');api.preserveSize();positionMenu();menu.hidden=false;trigger.setAttribute('aria-expanded','true');$('coding-language').focus();};
  $('coding-menu-close').onclick=()=>closeMenu(true);
  document.addEventListener('pointerdown',event=>{if(!event.target.closest('#coding-menu,#coding-menu-toggle'))closeMenu();});
  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!menu.hidden){event.stopImmediatePropagation();closeMenu(true);}},true);

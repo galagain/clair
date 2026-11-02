@@ -1,10 +1,10 @@
-Clair 0.22.2 : **la solution Coding s’affiche sur toute sa hauteur sur iPhone**.
+Clair 0.22.3 : **un bouton Coding directement en haut de la fenêtre**.
 
-Le bloc Code n’est plus limité à une demi-hauteur d’écran et n’a plus de défilement interne, en portrait comme en paysage. Les lignes longues continuent de revenir à la ligne. Si la solution dépasse l’écran, le défilement de la page reste disponible.
+Le bouton **⌄ à côté de l’icône Code** ouvre ou ferme le menu contenant Firefox, l’énoncé et tous les réglages Coding. Les commandes **Résoudre, Copier, Arrêter et Effacer** sont regroupées à côté du choix **Python / C++**, en haut du menu. Le panneau Code conserve uniquement la réponse.
 
 - **Clair-Mac-arm64.dmg** : Mac Apple Silicon, macOS 15 minimum. Glisser Clair dans Applications.
 - **Clair-Windows-x64.exe** : Windows 10/11 64 bits. Ouvrir directement le fichier.
-- **Clair-Firefox.zip** : Firefox 140 minimum sur ordinateur. Charger temporairement depuis `about:debugging` ; puis connecter l’extension avec **… → Réglages Coding → Firefox → Copier le code** dans Clair. [Guide](https://github.com/galagain/clair/blob/main/docs/CODING.md).
+- **Clair-Firefox.zip** : Firefox 140 minimum sur ordinateur. Charger temporairement depuis `about:debugging` ; puis connecter l’extension avec **bouton ⌄ à côté de Code → Réglages Coding → Firefox → Copier le code** dans Clair. [Guide](https://github.com/galagain/clair/blob/main/docs/CODING.md).
 
 L’extension n’est pas signée par Mozilla : la recharger à chaque démarrage de Firefox. Les envois ont lieu uniquement au raccourci ou au clic « Envoyer et analyser ». Aucun code exécuté ou soumis. Certains éditeurs n’exposent que les lignes visibles ; un avertissement accompagne alors la capture.
 

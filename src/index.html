@@ -14,16 +14,15 @@
   <button id="more-toggle" class="icon-button" title="Plus d’options" aria-label="Plus d’options" aria-expanded="false"><svg class="icon " aria-hidden="true"><use href="#i-more"/></svg></button>
   <button id="close" class="icon-button" title="Quitter et arrêter l’écoute" aria-label="Quitter"><svg class="icon " aria-hidden="true"><use href="#i-close"/></svg></button>
  </div>
- <div class="section-switches" role="group" aria-label="Sections visibles">
+ <div class="section-toolbar"><div class="section-switches" role="group" aria-label="Sections visibles">
   <button id="speech-toggle" class="icon-button" aria-label="Discours" title="Discours" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-headphones"/></svg></button>
   <button id="answer-toggle" class="icon-button" aria-label="Pistes" title="Pistes" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-spark"/></svg></button>
   <button id="translation-toggle" class="icon-button" role="switch" aria-checked="false" title="Activer la traduction" aria-label="Traduire le discours"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 5h11M8 3v2m4 0c-1 5-4 8-9 10m2-7c1 3 4 5 7 6m1 6 4-11 4 11m-6-4h4"/></svg></button>
   <button id="coding-tab" class="icon-button" title="Code" aria-pressed="false" aria-label="Coding"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m8 6-6 6 6 6m8-12 6 6-6 6M14 4l-4 16"/></svg></button>
- </div>
+ </div><button id="coding-menu-toggle" class="icon-button" title="Réglages Coding" aria-label="Réglages Coding" aria-haspopup="dialog" aria-controls="coding-menu" aria-expanded="false"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button></div>
 </header>
 
 <div id="more-menu" class="more-menu glass" hidden>
- <button id="coding-menu-toggle" aria-haspopup="dialog" aria-controls="coding-menu" aria-expanded="false">Réglages Coding <span>⌘</span></button>
  <button id="pin" aria-pressed="true">Toujours au premier plan <span>⌖</span></button>
  <button id="compact" aria-pressed="false">Vue compacte <span>↔</span></button>
  <button id="demo">Tester sans API <span>▷</span></button>
@@ -34,7 +33,12 @@
  <div class="menu-meta"><span id="timer">00:00</span><span id="model-label">GPT-6.1 Sol</span><span id="shortcut">Ctrl ⇧ Espace : écoute</span></div>
 </div>
 <section id="coding-menu" class="coding-menu glass" role="dialog" aria-labelledby="coding-menu-title" hidden>
- <div class="panel-heading coding-heading"><h2 id="coding-menu-title">Coding</h2><div class="coding-selects"><select id="coding-language" aria-label="Langage de programmation"><option value="python">Python</option><option value="cpp">C++</option></select><button id="coding-menu-close" class="icon-button" aria-label="Fermer les réglages Coding"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button></div></div>
+ <h2 id="coding-menu-title" class="sr-only">Réglages Coding</h2>
+ <div class="coding-toolbar">
+  <select id="coding-language" aria-label="Langage de programmation"><option value="python">Python</option><option value="cpp">C++</option></select>
+  <button id="coding-next" class="secondary">Résoudre</button><button id="coding-copy" class="text-button" disabled>Copier</button><button id="coding-stop" class="text-button" hidden>Arrêter</button><button id="coding-clear" class="text-button" title="Effacer l’exercice et la solution">Effacer</button>
+  <button id="coding-menu-close" class="icon-button" aria-label="Fermer les réglages Coding"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
+ </div>
  <details id="coding-browser" class="coding-browser"><summary>Firefox</summary>
   <div class="button-row"><button id="coding-extension" class="text-button">Ouvrir l’extension</button><button id="coding-pair" class="text-button">Copier le code</button><button id="coding-disconnect" class="text-button">Déconnecter</button></div>
   <p class="file-hint">Firefox → about:debugging → Ce Firefox → Charger un module temporaire → manifest.json. Collez ensuite le code de connexion dans l’extension.</p>
@@ -47,7 +51,7 @@
   <details class="coding-tests"><summary>Sorties des tests</summary><textarea id="coding-tests" rows="2" maxlength="8000" aria-label="Sorties des tests" spellcheck="false"></textarea></details>
  </details>
  <p id="coding-warning" class="file-hint"></p>
- <div class="coding-actions"><button id="coding-next" class="secondary">Résoudre</button><button id="coding-copy" class="text-button" disabled>Copier</button><button id="coding-stop" class="text-button" hidden>Arrêter</button><button id="coding-clear" class="text-button" title="Effacer l’exercice et la solution">Effacer</button></div>
+
  <p id="coding-menu-status" class="feed-status" role="status"></p>
 </section>
 <div id="error" class="glass" role="alert" hidden></div>
