@@ -1,6 +1,6 @@
-Clair 0.22.1 : **le panneau Coding affiche uniquement la réponse**.
+Clair 0.22.2 : **la solution Coding s’affiche sur toute sa hauteur sur iPhone**.
 
-Les réglages et commandes sont regroupés dans **… → Réglages Coding**, en haut : langage, connexion Firefox, énoncé, Résoudre, Copier, Arrêter et Effacer. Le menu se ferme au début d’une résolution, sans changer la taille de la fenêtre.
+Le bloc Code n’est plus limité à une demi-hauteur d’écran et n’a plus de défilement interne, en portrait comme en paysage. Les lignes longues continuent de revenir à la ligne. Si la solution dépasse l’écran, le défilement de la page reste disponible.
 
 - **Clair-Mac-arm64.dmg** : Mac Apple Silicon, macOS 15 minimum. Glisser Clair dans Applications.
 - **Clair-Windows-x64.exe** : Windows 10/11 64 bits. Ouvrir directement le fichier.
