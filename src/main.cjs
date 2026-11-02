@@ -15,14 +15,14 @@ const QRCode=require('qrcode');
 const phone=new PhoneServer({onStatus:value=>send({type:'phone-status',...value})});
 const documents=new DocumentContext({extract:(bytes,options)=>process.platform!=='darwin'?extractPortablePDF(bytes,options):extractPDF(app.isPackaged?path.join(process.resourcesPath,'native','clair-pdf-text'):path.join(__dirname,'../build/native',process.arch,'clair-pdf-text'),bytes,options),onChange:files=>{engine?.setDocuments(files);send({type:'files-changed',files:documents.list()});}});
 const nativeAudio=new NativeSystemAudio({executable:app.isPackaged?path.join(process.resourcesPath,'native','clair-system-audio'):path.join(__dirname,'../build/native',process.arch,'clair-system-audio'),emit:send});
-let win,background,mouse,overlay,engine,coding,bridge,config,key='',storedKeys=false,captureAllowed=false,mod;
+let win,background,mouse,overlay,engine,coding,codingSpeech,bridge,config,key='',storedKeys=false,captureAllowed=false,mod;
 // Explicit isolated profile for native QA; never read the user's keys in tests.
 if(app.commandLine.hasSwitch('user-data-dir'))app.setPath('userData',path.resolve(app.commandLine.getSwitchValue('user-data-dir')));
 const indexURL=pathToFileURL(path.join(__dirname,'index.html')).href;
 const storageFile=()=>path.join(app.getPath('userData'),'preferences.json');
 const keyFile=()=>path.join(app.getPath('userData'),'credentials.encrypted.json');
 function trusted(e){return Boolean(win&&!win.isDestroyed()&&e.sender===win.webContents&&e.senderFrame?.url===indexURL);}
-function send(e){if(win&&!win.isDestroyed())win.webContents.send('clair:event',e);}
+function send(e){codingSpeech?.event(e);if(win&&!win.isDestroyed())win.webContents.send('clair:event',e);}
 const writes=new Map();
 function atomic(file,data){const encoded=JSON.stringify(data);const job=(writes.get(file)||Promise.resolve()).catch(()=>{}).then(async()=>{await fs.mkdir(path.dirname(file),{recursive:true});const tmp=file+'.tmp';await fs.writeFile(tmp,encoded,{mode:0o600});await fs.rename(tmp,file);});writes.set(file,job);return job;}
 async function canEncrypt(){if(process.platform==='linux'&&safeStorage.getSelectedStorageBackend?.()==='basic_text')return false;return safeStorage.isAsyncEncryptionAvailable?await safeStorage.isAsyncEncryptionAvailable():safeStorage.isEncryptionAvailable();}
@@ -36,7 +36,9 @@ async function setup(){
  try{const saved=JSON.parse(await fs.readFile(keyFile(),'utf8'));if(await canEncrypt()){key=await decrypt(Buffer.from(saved.key,'base64'));storedKeys=true;if(saved.audioKey)await atomic(keyFile(),{key:saved.key});}}catch{/* A keychain failure never downgrades to plaintext. */}
  engine=new InterviewEngine({WebSocketImpl:WebSocket,emit:e=>{if(e.type==='stopped'&&!e.reset){captureAllowed=false;nativeAudio.stop();}send(e);}});engine.configure(config);engine.credentials({key});
  const {CodingEngine}=await import('./coding-engine.mjs');coding=new CodingEngine({emit:send});
- const analyzeCoding=(snapshot,action='next')=>coding.analyze(snapshot,{action,config,key,usage:()=>engine.tokens.begin(),request:()=>engine.request(),headers:(headers,model)=>engine.tokens.headers(headers,model)});
+ const codingOptions=()=>({config,key,usage:()=>engine.tokens.begin(),request:()=>engine.request(),headers:(headers,model)=>engine.tokens.headers(headers,model)});
+ const analyzeCoding=(snapshot,action='next')=>coding.analyze(snapshot,{action,...codingOptions()});
+ const {CodingSpeech}=await import('./coding-speech.mjs');codingSpeech=new CodingSpeech({enabled:()=>config.codingAutoVoice&&engine.running,state:()=>coding.state(),adapt:text=>coding.adapt(text,codingOptions()),cancel:()=>{if(coding.active?.item.action==='adapt')coding.cancel();},report:error=>send({type:'coding-adapt-error',error:mod.safeError(error)})});
  bridge=new CodingBridge({receive:snapshot=>analyzeCoding(snapshot)});
  const area=screen.getPrimaryDisplay().workArea;win=new BrowserWindow({title:'Clair — Assistant d’entretien',width:400,height:300,minWidth:340,minHeight:180,x:Math.max(area.x,area.x+area.width-420),y:area.y+30,frame:false,acceptFirstMouse:true,transparent:true,hasShadow:false,backgroundColor:'#00000000',show:false,alwaysOnTop:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true,backgroundThrottling:false}});overlay=new WindowOverlay(win,screen);Menu.setApplicationMenu(process.platform==='darwin'?Menu.buildFromTemplate([{role:'appMenu'},{role:'editMenu'},{role:'windowMenu'}]):null);syncWindow();if(process.platform==='darwin')win.setVisibleOnAllWorkspaces(true,{visibleOnFullScreen:true});
  win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-navigate',(e,url)=>{if(url!==indexURL)e.preventDefault()});win.webContents.on('render-process-gone',()=>{overlay.reset();engine.stop();coding.cancel();mouse?.stop();void phone.close();});win.webContents.on('did-start-loading',()=>{overlay.reset();captureAllowed=false;engine.stop();coding.cancel();mouse?.stop();void phone.close();});
@@ -48,7 +50,7 @@ async function setup(){
  guard('mouse:state',()=>mouse.state());guard('mouse:enable',enabled=>mouse.enable(enabled,true));guard('mouse:learn',action=>mouse.learn(action));guard('mouse:forget',action=>mouse.forget(action));guard('mouse:permissions',()=>shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility'));
  guard('config:get',()=>({...config,hasKey:Boolean(key),storedKeys,platform:process.platform,nativeAudio:process.platform==='darwin',version:app.getVersion(),backgroundShortcutRegistered:background?.registered===true}));
  guard('config:save',async c=>{if(engine.running)throw Error('Arrêtez l’écoute avant de modifier les réglages.');config=mod.normalizeConfig(c);engine.configure(config);syncWindow();await atomic(storageFile(),config);return config;});
- guard('preferences:save',async value=>{const next={...config};for(const field of ['translationEnabled','translationLanguage','answerLanguage','transcriptionLanguage'])if(Object.hasOwn(value||{},field))next[field]=value[field];const saved=mod.normalizeConfig(next);config=saved;await atomic(storageFile(),config);send({type:'preferences-changed',config});engine.preferences(config);return config;});
+ guard('preferences:save',async value=>{const next={...config};for(const field of ['codingAutoVoice','translationEnabled','translationLanguage','answerLanguage','transcriptionLanguage'])if(Object.hasOwn(value||{},field))next[field]=value[field];const saved=mod.normalizeConfig(next);config=saved;await atomic(storageFile(),config);send({type:'preferences-changed',config});engine.preferences(config);if(!config.codingAutoVoice)codingSpeech.reset();return config;});
  guard('keys:save',async value=>{
   if(engine.running)throw Error('Arrêtez l’écoute.');const next=String(value?.key||'').trim();
   if(!next.startsWith('sk-')||next.length<20||next.length>512)throw Error('Clé invalide.');
@@ -64,7 +66,8 @@ async function setup(){
  ipcMain.on('phone:publish',(e,value)=>{if(trusted(e))phone.publish(value);});
  guard('coding:state',()=>coding.state());
  guard('coding:analyze',(snapshot,action)=>analyzeCoding(snapshot,action));
- guard('coding:cancel',()=>coding.cancel());
+ guard('coding:cancel',()=>{codingSpeech.reset();coding.cancel();});
+ guard('coding:undo',()=>{codingSpeech.reset();return coding.undo();});
  guard('coding:clear',()=>coding.clear());
  guard('coding:pair',async()=>{clipboard.writeText(await bridge.start());return true;});
  guard('coding:disconnect',()=>bridge.close());

@@ -27,3 +27,5 @@ Le son système regroupe les applications : Clair ne sépare pas plusieurs parti
 Les PDF sans texte (scans) ou protégés par mot de passe ne sont pas pris en charge. Limites : 5 fichiers, 10 Mo et 80 pages par fichier, 60 000 caractères au total. Aucun audio n’est sauvegardé. Le texte des PDF utilisés en contexte est envoyé à OpenAI avec la demande ; les requêtes Responses utilisent `store:false`.
 
 Les versions ne sont pas signées avec un certificat de distribution : signature locale ad hoc sur Mac, aucune signature éditeur sur Windows. Mac Intel n’est pas inclus dans la release. Un partage de tout l’écran peut montrer Clair.
+
+Le suivi vocal Coding est testé avec des transcriptions et une API simulées : source micro seule, regroupement, temporisation, annulation, réponse atomique, absence de changement, erreur, remplacement par une nouvelle capture et retour à la version précédente. Aucun appel API réel ni test de pertinence avec la voix de l’utilisateur.

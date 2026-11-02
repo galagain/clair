@@ -1,6 +1,11 @@
-Clair 0.22.3 : **un bouton Coding directement en haut de la fenêtre**.
+Clair 0.23.0 : **code commenté et adaptation automatique à la voix**.
 
-Le bouton **⌄ à côté de l’icône Code** ouvre ou ferme le menu contenant Firefox, l’énoncé et tous les réglages Coding. Les commandes **Résoudre, Copier, Arrêter et Effacer** sont regroupées à côté du choix **Python / C++**, en haut du menu. Le panneau Code conserve uniquement la réponse.
+- Quelques commentaires courts en français expliquent les étapes dans le code Python ou C++.
+- **Suivre ma voix**, activé dans le menu Coding, utilise les phrases finalisées attribuées au micro pour adapter l’exercice courant. Le son système et les sources ambiguës sont exclus.
+- L’ancienne solution reste visible pendant la génération ; seule une réponse terminée la remplace. **Revenir** restaure la version précédente.
+- Pause d’environ 1,5 seconde après transcription, analyses espacées d’au moins huit secondes. Le suivi peut être désactivé et utilise des appels API supplémentaires. Aucun code n’est écrit dans l’éditeur du navigateur.
+
+Tests avec API et transcriptions simulées ; pertinence des commentaires et adaptations à vérifier en situation réelle. [Fonctionnement et limites](https://github.com/galagain/clair/blob/main/docs/CODING.md).
 
 - **Clair-Mac-arm64.dmg** : Mac Apple Silicon, macOS 15 minimum. Glisser Clair dans Applications.
 - **Clair-Windows-x64.exe** : Windows 10/11 64 bits. Ouvrir directement le fichier.

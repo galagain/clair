@@ -24,15 +24,18 @@ const os=require('node:os');
    const require=process.getBuiltinModule('module').createRequire(app.getAppPath()+'/package.json');
    const {CodingBridge}=require('./src/coding-bridge.cjs'),listen=CodingBridge.prototype.listen;
    CodingBridge.prototype.listen=function(){this.port=0;return listen.call(this);};
+   const {InterviewEngine}=require('./src/engine.mjs'),configure=InterviewEngine.prototype.configure;
+   InterviewEngine.prototype.configure=function(c){global.codingQaInterview=this;return configure.call(this,c);};
    const {CodingEngine}=require('./src/coding-engine.mjs');
    const original=CodingEngine.prototype.run;
    CodingEngine.prototype.run=function(entry,args){
     this.fetch=async(_url,init)=>{
      global.codingQaRequests=(global.codingQaRequests||0)+1;
      global.codingQaBody=JSON.parse(init.body);
-     const exercise=JSON.parse(global.codingQaBody.input[0].content).exercice;
+     const input=JSON.parse(global.codingQaBody.input[0].content),exercise=input.exercice;
+     if(input.paroles)await new Promise(resolve=>{global.codingQaVoiceRelease=resolve;});
      if(exercise.title==='Slow')await new Promise(resolve=>{global.codingQaRelease=resolve;});
-     const text=exercise.title==='Slow'?'OLD_RESULT':exercise.title==='Fixture'?'def sum_values(xs):\n    return sum(xs)':'def two_sum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        if target - n in seen:\n            return [seen[target - n], i]\n        seen[n] = i';
+     const text=input.paroles?'def sum_values(xs):\n    # Accumuler les valeurs une à une.\n    total = 0\n    for value in xs:\n        total += value\n    return total':exercise.title==='Slow'?'OLD_RESULT':exercise.title==='Fixture'?'def sum_values(xs):\n    return sum(xs)':'def two_sum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        if target - n in seen:\n            return [seen[target - n], i]\n        seen[n] = i';
      const events=[{type:'response.output_text.delta',delta:text},{type:'response.completed',response:{usage:{input_tokens:12,output_tokens:15}}}];
      return new Response(events.map(event=>'data: '+JSON.stringify(event)+'\n\n').join(''),{headers:{'Content-Type':'text/event-stream'}});
     };
@@ -86,6 +89,19 @@ const os=require('node:os');
   // Stale events cannot change the replacement or its controls.
   await app.evaluate(({BrowserWindow})=>{const wc=BrowserWindow.getAllWindows()[0].webContents;wc.send('clair:event',{type:'coding-delta',id:1,text:'OLD_RESULT'});wc.send('clair:event',{type:'coding-error',id:1,error:'Old error'});});
   assert.equal(await page.locator('#coding-solution').textContent(),'def sum_values(xs):\n    return sum(xs)');assert.equal(await page.locator('#coding-status').textContent(),'');
+  await page.evaluate(()=>window.clair.preferences({codingAutoVoice:true}));
+  const requests=await app.evaluate(()=>global.codingQaRequests);
+  await app.evaluate(()=>{global.codingQaInterview.running=true;global.codingQaInterview.notify('transcript',{id:'voice-system',speaker:'system',final:true,text:'Use a loop to sum the numbers.'});global.codingQaInterview.notify('transcript',{id:'voice-mic',speaker:'microphone',final:false,text:'Use a loop'});});
+  assert.equal(await app.evaluate(()=>global.codingQaRequests),requests);
+  await app.evaluate(()=>global.codingQaInterview.notify('transcript',{id:'voice-mic',speaker:'microphone',final:true,text:'Use a loop to sum the numbers.'}));
+  await page.waitForFunction(()=>document.querySelector('#coding-status').textContent.includes('Adaptation'));
+  assert.equal(await page.locator('#coding-solution').textContent(),'def sum_values(xs):\n    return sum(xs)');
+  await app.evaluate(()=>global.codingQaVoiceRelease());
+  await page.waitForFunction(()=>document.querySelector('#coding-solution').textContent.includes('# Accumuler'));
+  assert.match(await app.evaluate(()=>JSON.parse(global.codingQaBody.input[0].content).paroles),/Use a loop/);
+  await openMenu();await page.locator('#coding-undo').click();assert.equal(await page.locator('#coding-solution').textContent(),'def sum_values(xs):\n    return sum(xs)');
+  await page.locator('#coding-auto-voice').uncheck();assert.equal((await page.evaluate(()=>window.clair.config())).codingAutoVoice,false);
+  await page.locator('#coding-menu-close').click();await app.evaluate(()=>{global.codingQaInterview.running=false;global.codingQaInterview.notify('stopped',{});});
   assert.equal(await page.locator('#coding-menu').isVisible(),false);
   await page.locator('#speech-toggle').click();await page.locator('#answer-toggle').click();
   await fs.mkdir('release/qa',{recursive:true});await page.screenshot({path:'release/qa/clair-coding.png',omitBackground:true});
@@ -101,6 +117,6 @@ const os=require('node:os');
   assert.equal(await page.locator('#coding-code').inputValue(),'');
   await page.evaluate(()=>window.clair.codingDisconnect());
   await assert.rejects(fetch(`http://127.0.0.1:${port}/v1/status`));
-  assert.deepEqual(errors,[]);console.log('Coding QA passed: solution only, replacement via bridge, cancellation, ignored stale output, exact code copy, top settings menu, solution-only panel, stable bounds, tabs and narrow layout.');
+  assert.deepEqual(errors,[]);console.log('Coding QA passed: solution only, replacement via bridge, cancellation, ignored stale output, exact code copy, top settings menu, solution-only panel, automatic microphone adaptation, stable code during generation, undo, disabling voice, stable bounds, tabs and narrow layout.');
  }finally{await app.close();await fs.rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:200});}
 })().catch(error=>{console.error(error);process.exitCode=1;});

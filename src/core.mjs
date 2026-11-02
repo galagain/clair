@@ -1,9 +1,9 @@
 export const MODELS = ['gpt-6.1-sol', 'gpt-6-luna', 'gpt-6-astra'];
 export const LANGUAGES=Object.freeze({fr:'Français',en:'Anglais',es:'Espagnol',de:'Allemand',it:'Italien',pt:'Portugais',nl:'Néerlandais',ar:'Arabe',zh:'Chinois',ja:'Japonais',ko:'Coréen',ru:'Russe'});
-export const DEFAULTS = {model:'gpt-6.1-sol',translationEnabled:false,translationLanguage:'fr',answerLanguage:'en',transcriptionLanguage:'en',source:'auto',silenceMs:350,threshold:0.012,anticipate:true,auto:true,alwaysOnTop:true,opacity:1};
+export const DEFAULTS = {model:'gpt-6.1-sol',codingAutoVoice:true,translationEnabled:false,translationLanguage:'fr',answerLanguage:'en',transcriptionLanguage:'en',source:'auto',silenceMs:350,threshold:0.012,anticipate:true,auto:true,alwaysOnTop:true,opacity:1};
 export function normalizeConfig(c={}) {
  const n=(v,d,min,max)=>Number.isFinite(Number(v))?Math.max(min,Math.min(max,Number(v))):d;
- return {model:MODELS.includes(c.model)?c.model:DEFAULTS.model,translationEnabled:c.translationEnabled===true,translationLanguage:Object.hasOwn(LANGUAGES,c.translationLanguage)?c.translationLanguage:'fr',answerLanguage:Object.hasOwn(LANGUAGES,c.answerLanguage)?c.answerLanguage:'en',transcriptionLanguage:Object.hasOwn(LANGUAGES,c.transcriptionLanguage)?c.transcriptionLanguage:'en',source:'auto',silenceMs:n(c.silenceMs,350,350,1800),threshold:0.012,anticipate:true,auto:true,alwaysOnTop:c.alwaysOnTop!==false,opacity:n(c.opacity,1,0.35,1)};
+ return {model:MODELS.includes(c.model)?c.model:DEFAULTS.model,codingAutoVoice:c.codingAutoVoice!==false,translationEnabled:c.translationEnabled===true,translationLanguage:Object.hasOwn(LANGUAGES,c.translationLanguage)?c.translationLanguage:'fr',answerLanguage:Object.hasOwn(LANGUAGES,c.answerLanguage)?c.answerLanguage:'en',transcriptionLanguage:Object.hasOwn(LANGUAGES,c.transcriptionLanguage)?c.transcriptionLanguage:'en',source:'auto',silenceMs:n(c.silenceMs,350,350,1800),threshold:0.012,anticipate:true,auto:true,alwaysOnTop:c.alwaysOnTop!==false,opacity:n(c.opacity,1,0.35,1)};
 }
 export function possibleQuestion(text) {
  const t=text.trim();if(t.split(/\s+/).length<7)return false;
