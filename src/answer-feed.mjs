@@ -42,7 +42,7 @@ export class AnswerFeed {
     entry={node,state,body,details,extra};this.nodes.set(item.id,entry);
    }
    if(entry.answer!==item.answer){renderAnswer(entry.body,item.answer);entry.answer=item.answer;}
-   const label=item.oldContext?'Contexte précédent':item.draft?'Provisoire':item.state==='incomplete'?'Interrompu':'';if(entry.state.textContent!==label)entry.state.textContent=label;entry.state.hidden=!label;
+   const status=item.oldContext?'Contexte précédent':item.draft?'Provisoire':item.state==='incomplete'?'Interrompu':'',label=[item.kind==='coding'?'Repères du code':'',status].filter(Boolean).join(' · ');if(entry.state.textContent!==label)entry.state.textContent=label;entry.state.hidden=!label;
    const sections=parseSections(item.text),extra=[sections.POINTS,sections.PRECISION].filter(Boolean).join('\n');
    if(entry.extra.textContent!==extra)entry.extra.textContent=extra;entry.details.hidden=!extra;
   }

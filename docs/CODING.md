@@ -7,9 +7,17 @@
 
 Le raccourci fonctionne lorsque Firefox a le focus. Il est modifiable dans `about:addons` → roue dentée → **Gérer les raccourcis des extensions**. En cas d’échec, un **!** apparaît sur l’icône ; le détail est accessible en ouvrant l’extension. Aucune notification système ni fenêtre ne s’ouvre automatiquement. Le raccourci ne rend pas Clair invisible dans un partage d’écran.
 
-L’onglet **Coding** affiche la solution avec quelques commentaires courts en français pour comprendre les étapes. Chaque raccourci remplace la précédente et annule sa génération si elle est encore en cours. Les réglages et commandes sont dans **bouton ⌄ à côté de Code → Réglages Coding**, en haut de Clair. **Résoudre** utilise le contenu envoyé ou modifié dans Clair. **Copier** copie la solution avec son indentation. **Effacer** retire l’exercice et la solution ; l’export de session inclut seulement la solution actuelle.
+L’onglet **Coding** affiche la solution avec quelques commentaires courts en français pour comprendre les étapes. Dans **Pistes**, « Repères du code » résume l’approche, les étapes essentielles, la complexité et les cas limites pertinents, dans la langue choisie pour les pistes. Ces repères décrivent le code affiché ; les réponses d’entretien et leur historique restent disponibles. Chaque raccourci remplace la précédente et annule sa génération si elle est encore en cours. Les réglages et commandes sont dans **bouton ⌄ à côté de Code → Réglages Coding**, en haut de Clair. **Résoudre** utilise le contenu envoyé ou modifié dans Clair. **Copier** copie la solution avec son indentation. **Effacer** retire l’exercice et la solution ; l’export de session inclut seulement la solution actuelle.
 
 L’aide utilise le modèle et la clé déjà configurés dans Clair. Python et C++ sont sélectionnables. Si une information indispensable manque, une courte question remplace le code. Le micro n’est pas nécessaire pour résoudre un exercice ; il sert au suivi vocal décrit ci-dessous.
+
+## Réanalyser les échanges récents
+
+Le petit bouton **↻ en haut à droite du rectangle Code** relance l’analyse avec la dernière capture Firefox, la solution actuelle et les **deux dernières minutes de transcription finalisée**, jusqu’à 6 000 caractères. Le contexte inclut le micro et le son de l’ordinateur, avec leurs sources lorsqu’elles sont connues. L’écoute doit avoir produit au moins une phrase récente ; sinon un message invite à démarrer l’écoute. Le bouton fonctionne aussi après avoir arrêté l’écoute tant que les phrases sont encore récentes.
+
+L’ancien code reste visible pendant la réanalyse ; une réponse complète le remplace et **Revenir** permet d’annuler ce changement. Si le code convient déjà, il est conservé. Les repères de Pistes sont régénérés après une solution ou une réanalyse manuelle. Le bouton n’effectue pas une nouvelle capture de CoderPad : pour tenir compte des modifications dans l’éditeur du navigateur, renvoie d’abord la page avec Alt ⇧ C.
+
+Les repères utilisent un appel API supplémentaire après la génération du code ; leur échec ne supprime pas le code. La réanalyse manuelle utilise aussi le compte API configuré. Tout reste en mémoire jusqu’à la fermeture ou à l’effacement de la session. Les repères apparaissent également dans Pistes sur l’iPhone, qui reste un écran de lecture.
 
 ## Suivre ma voix
 

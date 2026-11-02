@@ -1,4 +1,4 @@
-import {codingSnapshot,codingBody,codingAdaptBody,codingSolution} from './coding-core.mjs';
+import {codingSnapshot,codingBody,codingAdaptBody,codingReviewBody,codingSolution} from './coding-core.mjs';
 import {sseEvents,safeError} from './core.mjs';
 
 // Voice adaptations are buffered: only a complete result replaces the code.
@@ -30,6 +30,12 @@ export class CodingEngine {
   this.notify('adapting',{id:item.id});request?.();
   entry.promise=this.run(entry,{body,key,usage:usage?.(),headers});return true;
  }
+ review(context,{config,key,usage,request,headers}={}){
+  const base=this.history.at(-1);if(this.active)throw Error('Une analyse Coding est déjà en cours.');if(!base||base.state!=='done'||!this.snapshot)throw Error('Envoyez d’abord un exercice et attendez sa solution.');if(!key)throw Error('Ajoutez votre clé API dans Réglages.');
+  const body=codingReviewBody(config,this.snapshot,codingSolution(base.text),context);
+  const item={...base,id:++this.sequence,action:'review',text:'',state:'streaming'},entry={item,base,controller:new AbortController()};this.active=entry;
+  this.notify('adapting',{id:item.id,manual:true});request?.();entry.promise=this.run(entry,{body,key,usage:usage?.(),headers});return {id:item.id};
+ }
  undo(){if(!this.previous)return false;this.cancel();const item={...this.previous,id:++this.sequence};this.previous=null;this.history=[item];this.notify('updated',{item:{...item},canUndo:false});return true;}
  async run(entry,{body,key,usage,headers}){
   const {item,controller}=entry,valid=()=>this.active===entry;
@@ -52,7 +58,7 @@ export class CodingEngine {
    }
    if(entry.base&&refused)throw Error('Adaptation refusée.');
    if(!complete||!item.text.trim())throw Error('Flux interrompu ou réponse vide.');
-   if(valid()){item.state='done';if(entry.base){const text=codingSolution(item.text).trim();if(!text)throw Error('Adaptation vide.');if(text==='[[KEEP]]'||text===codingSolution(entry.base.text).trim())this.notify('unchanged',{id:item.id});else{this.previous={...entry.base};this.history=[item];this.notify('updated',{item:{...item},canUndo:true});}}else this.notify('done',{id:item.id});}
+   if(valid()){item.state='done';if(entry.base){const text=codingSolution(item.text).trim();if(!text)throw Error('Adaptation vide.');if(text==='[[KEEP]]'||text===codingSolution(entry.base.text).trim())this.notify('unchanged',{id:item.id,manual:item.action==='review'});else{this.previous={...entry.base};this.history=[item];this.notify('updated',{item:{...item},canUndo:true});}}else this.notify('done',{id:item.id});}
   }catch(error){if(valid()){item.state='error';item.error=controller.signal.aborted?'Délai dépassé. Le texte reçu est conservé.':safeError(error);this.notify(entry.base?'adapt-error':'error',{id:item.id,error:entry.base?'Code conservé. '+item.error:item.error});}}
   finally{clearTimeout(timer);usage?.finish();if(valid())this.active=null;}
  }

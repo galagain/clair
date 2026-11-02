@@ -85,24 +85,27 @@ function renderHistory(){
 $('history-hold').onclick=()=>answerFeed.resume();
 api.onEvent(e=>{
  if(e.type==='preferences-changed'){config={...config,...e.config};preferenceView();}
- if(e.type==='answer-language-changed'){answerId=null;history.cancel(true);renderHistory();}
+ if(e.type==='answer-language-changed'){answerId=null;history.cancel(true,false);renderHistory();}
  if(e.type==='translation-reset'){translationId=null;translations.clear();ui('translation-status','');}
  if(e.type==='translation-start'&&config.translationEnabled&&e.language===config.translationLanguage){translationId=e.id;ui('translation-status','Traduction…');}
  if(e.type==='translation-delta'&&e.id===translationId&&config.translationEnabled&&e.language===config.translationLanguage)translations.update({id:e.id,text:e.text,final:false,speaker:e.speaker});
  if(e.type==='translation-done'&&e.id===translationId&&config.translationEnabled&&e.language===config.translationLanguage){translations.update({id:e.id,text:e.text,final:true,speaker:e.speaker});translationId=null;ui('translation-status','');}
  if(e.type==='translation-error'&&e.id===translationId){translations.markIncomplete();ui('translation-status',e.text);}
  if(e.type==='files-changed')renderFiles(e.files);
- if(e.type==='context-changed'){answerId=null;history.cancel(true);renderHistory();}
+ if(e.type==='context-changed'){answerId=null;history.cancel(true,false);renderHistory();}
  if(e.type==='status')status(e.text);
  if(e.type==='error')error(e.text);
  if(e.type==='stopped'){// start() first closes the previous session; do not tear down a newly prepared capture.
- if(!e.reset){if(translationId!==null)ui('translation-status','Traduction interrompue.');translationId=null;translations.markIncomplete();speech.markIncomplete();history.cancel();renderHistory();listenEpoch++;running=false;starting=false;diagnostic=false;cleanup();controls();ui('transcript-state','ARRÊTÉ');status('Écoute arrêtée');}}
+ if(!e.reset){if(translationId!==null)ui('translation-status','Traduction interrompue.');translationId=null;translations.markIncomplete();speech.markIncomplete();history.cancel(false,false);renderHistory();listenEpoch++;running=false;starting=false;diagnostic=false;cleanup();controls();ui('transcript-state','ARRÊTÉ');status('Écoute arrêtée');}}
  if(e.type==='level')showLevel(e.rms);
  if(e.type==='transcript-skip')speech.discard(e.id);
  if(e.type==='transcript-session')speech.markIncomplete();
  if(e.type==='transcript')speech.update(e);
  if(e.type==='transcript-speaker')speech.speaker(e.id,e.speaker);
  if(e.type==='transcript-order')speech.order(e.ids);
+ if(e.type==='coding-notes-start'){history.start({...e,independent:true,manual:true,kind:'coding'});renderHistory();}
+ if(e.type==='coding-notes-delta'){history.update(e);renderHistory();}
+ if(['coding-notes-done','coding-notes-error'].includes(e.type)){if(e.type==='coding-notes-error'&&!e.canceled&&!history.items.find(item=>item.id===e.id)?.text)history.update({...e,text:'[[REPONSE]] • '+(e.error||'Repères indisponibles.')});history.finish(e,e.type==='coding-notes-error');renderHistory();}
  if(e.type==='answer-start'){answerId=e.id;history.start(e);renderHistory();if(!history.current()){ui('answer-state','ANALYSE…');ui('latency','En attente du modèle…');}}
  if(e.type==='answer-delta'&&e.id===answerId){history.update(e);renderHistory();}
  if(e.type==='answer-done'&&e.id===answerId){history.finish(e);renderHistory();}

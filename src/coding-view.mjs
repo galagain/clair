@@ -12,7 +12,7 @@ export async function installCoding(api,{show,toggle}){
  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!menu.hidden){event.stopImmediatePropagation();closeMenu(true);}},true);
  window.addEventListener('resize',positionMenu);window.addEventListener('scroll',positionMenu);
  const message=text=>{$('coding-status').textContent=text;$('coding-menu-status').textContent=text;};
- function controls(){$('coding-undo').hidden=!canUndo;$('coding-stop').hidden=!busy;$('coding-copy').disabled=!codingSolution(current?.text).trim();}
+ function controls(){$('coding-reanalyze').disabled=busy||!snapshot||current?.state!=='done';$('coding-undo').hidden=!canUndo;$('coding-stop').hidden=!busy;$('coding-copy').disabled=!codingSolution(current?.text).trim();}
  function fit(){if($('coding-panel').hidden)return;const value=Math.max(100,Math.min(600,innerHeight-feed.getBoundingClientRect().top-24))+'px';if(feed.style.maxHeight!==value)feed.style.maxHeight=value;}
  new ResizeObserver(fit).observe($('coding-panel'));window.addEventListener('resize',fit);
  function render(){
@@ -26,9 +26,9 @@ export async function installCoding(api,{show,toggle}){
  api.onEvent(event=>{
   if(event.type==='preferences-changed')$('coding-auto-voice').checked=event.config.codingAutoVoice;
   if(!event.type.startsWith('coding-'))return;changed=true;
-  if(event.type==='coding-adapting'){adaptId=event.id;busy=true;message('Adaptation à votre voix…');controls();return;}
+  if(event.type==='coding-adapting'){adaptId=event.id;busy=true;message(event.manual?'Réanalyse des échanges…':'Adaptation à votre voix…');controls();return;}
   if(event.type==='coding-updated'){revision++;current={...event.item};canUndo=!!event.canUndo;adaptId=null;busy=false;message('');render();return;}
-  if(['coding-unchanged','coding-adapt-error','coding-adapt-canceled'].includes(event.type)&&(event.id===adaptId||event.id==null)){adaptId=null;busy=false;message(event.error||'');controls();return;}
+  if(['coding-unchanged','coding-adapt-error','coding-adapt-canceled'].includes(event.type)&&(event.id===adaptId||event.id==null)){adaptId=null;busy=false;message(event.error||(event.manual?'Code déjà adapté aux échanges.':''));controls();return;}
   if(event.type==='coding-start'){
    revision++;adaptId=null;canUndo=false;current={...event.item};fill(event.snapshot);busy=true;closeMenu();show();$('coding-input').open=false;$('coding-browser').open=false;
    message('Résolution…');render();feed.scrollTop=0;
@@ -38,6 +38,7 @@ export async function installCoding(api,{show,toggle}){
   if(event.type==='coding-cleared')reset();
  });
  $('coding-next').onclick=async()=>{const attempt=++revision;busy=true;controls();message('Résolution…');try{await api.codingAnalyze(input(),'next');}catch(error){if(attempt===revision){busy=false;controls();message(error.message);}}};
+ $('coding-reanalyze').onclick=async()=>{api.preserveSize();const attempt=++revision;busy=true;controls();message('Réanalyse des échanges…');try{await api.codingReview();}catch(error){if(attempt===revision){busy=false;controls();message(error.message);}}};
  $('coding-copy').onclick=()=>api.copy(codingSolution(current?.text)).catch(error=>message(error.message));
  $('coding-stop').onclick=()=>api.codingCancel().catch(error=>message(error.message));
  $('coding-clear').onclick=()=>api.codingClear().catch(error=>message(error.message));

@@ -1,12 +1,11 @@
-Clair 0.25.0 : **choix de qualité de la recopie**.
+Clair 0.26.0 : **repères de compréhension dans Pistes et réanalyse avec les échanges récents**.
 
-Dans le menu aux deux écrans, le sélecteur **Qualité** propose :
-- **Maximale** : résolution native Retina de la source, jusqu’à 60 images/seconde ; sélectionnée par défaut.
-- **Économique** : jusqu’à 1080p, 30 images/seconde.
+- Après l’envoi d’un exercice et la génération de sa solution, Pistes affiche un résumé pédagogique : approche, étapes essentielles, complexité et cas limites utiles.
+- Le petit bouton ↻ en haut à droite du Code relance l’analyse avec la capture actuelle, le code affiché et les deux dernières minutes de transcription finalisée du micro et de l’ordinateur.
+- Le code précédent reste lisible pendant la réanalyse. Revenir annule le changement ; une erreur ou l’absence de contexte ne supprime pas la solution.
+- Les repères et les réponses d’entretien peuvent continuer en parallèle, avec leur historique. Les repères sont également affichés sur iPhone.
 
-Le choix est mémorisé. Arrêter la recopie avant de changer de qualité, puis la redémarrer. Le mode maximal demande davantage de ressources ; la fluidité et la netteté finales dépendent aussi des écrans. Les dimensions et la cadence configurées sont indiquées dans l’infobulle du bouton pendant la recopie.
-
-154 tests unitaires, compilation native et interface vérifiée avec une capture simulée. La netteté et les performances du nouveau mode restent à vérifier sur les écrans physiques. [Guide](https://github.com/galagain/clair/blob/main/docs/RECOPIE.md).
+Les repères consomment un appel API supplémentaire. Le bouton ne relit pas automatiquement l’éditeur du navigateur : renvoyer la page pour actualiser sa capture. Tests avec API et transcription simulées ; pertinence des explications à vérifier en situation réelle. [Guide](https://github.com/galagain/clair/blob/main/docs/CODING.md).
 
 - **Clair-Mac-arm64.dmg** : Mac Apple Silicon, macOS 15 minimum. Glisser Clair dans Applications.
 - **Clair-Windows-x64.exe** : Windows 10/11 64 bits. Ouvrir directement le fichier.
