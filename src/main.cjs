@@ -11,12 +11,13 @@ const {CodingBridge}=require('./coding-bridge.cjs');
 const {Mirror}=require('./mirror.cjs');
 const {MouseShortcuts,mouseConfiguration}=require('./mouse-shortcuts.cjs');
 const {registerBackgroundWindow}=require('./background-window.cjs');
+const {registerViewShortcuts}=require('./view-shortcuts.cjs');
 const {PhoneServer}=require('./phone-server.cjs');
 const QRCode=require('qrcode');
 const phone=new PhoneServer({onStatus:value=>send({type:'phone-status',...value})});
 const documents=new DocumentContext({extract:(bytes,options)=>process.platform!=='darwin'?extractPortablePDF(bytes,options):extractPDF(app.isPackaged?path.join(process.resourcesPath,'native','clair-pdf-text'):path.join(__dirname,'../build/native',process.arch,'clair-pdf-text'),bytes,options),onChange:files=>{engine?.setDocuments(files);send({type:'files-changed',files:documents.list()});}});
 const nativeAudio=new NativeSystemAudio({executable:app.isPackaged?path.join(process.resourcesPath,'native','clair-system-audio'):path.join(__dirname,'../build/native',process.arch,'clair-system-audio'),emit:send});
-let win,background,mouse,mirror,overlay,engine,coding,codingSpeech,codingNotes,codingContext,bridge,config,key='',storedKeys=false,captureAllowed=false,mod;
+let win,background,mouse,mirror,overlay,engine,coding,codingSpeech,codingNotes,codingContext,bridge,modeShortcuts,config,key='',storedKeys=false,captureAllowed=false,mod;
 // Explicit isolated profile for native QA; never read the user's keys in tests.
 if(app.commandLine.hasSwitch('user-data-dir'))app.setPath('userData',path.resolve(app.commandLine.getSwitchValue('user-data-dir')));
 const indexURL=pathToFileURL(path.join(__dirname,'index.html')).href;
@@ -55,7 +56,7 @@ async function setup(){
  mouse=new MouseShortcuts({executable:app.isPackaged?path.join(process.resourcesPath,'native','clair-mouse'):path.join(__dirname,'../build/native',process.arch,'clair-mouse'),emit:send,action:()=>background.toggle(),save:value=>atomic(path.join(app.getPath('userData'),'mouse.json'),value)});
  try{mouse.config=mouseConfiguration(JSON.parse(await fs.readFile(path.join(app.getPath('userData'),'mouse.json'),'utf8')));}catch{}
  guard('mouse:state',()=>mouse.state());guard('mouse:enable',enabled=>mouse.enable(enabled,true));guard('mouse:learn',action=>mouse.learn(action));guard('mouse:forget',(action,index)=>mouse.forget(action,index));guard('mouse:permissions',()=>shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility'));
- guard('config:get',()=>({...config,hasKey:Boolean(key),storedKeys,platform:process.platform,nativeAudio:process.platform==='darwin',version:app.getVersion(),backgroundShortcutRegistered:background?.registered===true}));
+ guard('config:get',()=>({...config,hasKey:Boolean(key),storedKeys,platform:process.platform,nativeAudio:process.platform==='darwin',version:app.getVersion(),backgroundShortcutRegistered:background?.registered===true,modeShortcuts:modeShortcuts||{}}));
  guard('config:save',async c=>{if(engine.running)throw Error('Arrêtez l’écoute avant de modifier les réglages.');config=mod.normalizeConfig(c);engine.configure(config);syncWindow();await atomic(storageFile(),config);return config;});
  guard('preferences:save',async value=>{const notesLanguage=config.answerLanguage,next={...config};for(const field of ['codingAutoVoice','translationEnabled','translationLanguage','answerLanguage','transcriptionLanguage'])if(Object.hasOwn(value||{},field))next[field]=value[field];const saved=mod.normalizeConfig(next);config=saved;await atomic(storageFile(),config);send({type:'preferences-changed',config});engine.preferences(config);if(!config.codingAutoVoice)codingSpeech.reset();if(notesLanguage!==config.answerLanguage)void codingNotes.start(coding.snapshot,coding.history.at(-1),codingOptions());return config;});
  guard('keys:save',async value=>{
@@ -110,7 +111,7 @@ async function setup(){
  guard('clipboard:write',text=>{clipboard.writeText(String(text||'').slice(0,32000));});
  guard('window:background',()=>background.toggle());guard('window:minimize',()=>win.minimize());guard('window:close',()=>win.close());
  ipcMain.on('audio:chunk',(e,data,levels)=>{if(trusted(e)&&data instanceof ArrayBuffer&&data.byteLength<=48000){const valid=levels&&[levels.systemRms,levels.micRms].every(v=>Number.isFinite(v)&&v>=0&&v<=2);engine.audio(new Uint8Array(data),valid?levels:undefined);}});
- background=registerBackgroundWindow(win,globalShortcut);win.webContents.on('did-finish-load',()=>{if(mouse.config.enabled&&mouse.available&&!mouse.child)mouse.launch(false);});
+ modeShortcuts=registerViewShortcuts(globalShortcut,send);background=registerBackgroundWindow(win,globalShortcut);win.webContents.on('did-finish-load',()=>{if(mouse.config.enabled&&mouse.available&&!mouse.child)mouse.launch(false);});
  globalShortcut.register('CommandOrControl+Shift+Space',()=>send({type:'shortcut-toggle'}));globalShortcut.register('CommandOrControl+Shift+Enter',()=>engine.manual(''));
  win.on('close',()=>{mirror?.stop();engine.stop();coding.cancel();codingNotes?.cancel();mouse?.stop();void phone.close();});powerMonitor.on('suspend',()=>{mirror?.stop();engine.stop();coding.cancel();codingNotes?.cancel();mouse?.stop();void phone.close();send({type:'status',text:'Écoute arrêtée à la mise en veille.'})});
  win.once('ready-to-show',()=>win.show());await win.loadFile(path.join(__dirname,'index.html'));

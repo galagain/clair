@@ -26,7 +26,7 @@ let translationId=null,preferenceBusy=false;
 for(const id of ['translation-language','answer-language','transcription-language'])for(const [value,name] of Object.entries(LANGUAGES)){const option=document.createElement('option');option.value=value;option.textContent=name;$(id).append(option);}
 function preferenceView(){if(!config)return;$('translation-card').hidden=!config.translationEnabled;$('translation-toggle').setAttribute('aria-checked',String(config.translationEnabled));$('translation-toggle').title=config.translationEnabled?'Désactiver la traduction':'Activer la traduction';$('translation-language').value=config.translationLanguage;$('answer-language').value=config.answerLanguage;$('transcription-language').value=config.transcriptionLanguage;for(const id of ['translation-toggle','translation-language','answer-language','transcription-language'])$(id).disabled=preferenceBusy;}
 async function preferences(patch){if(preferenceBusy)return;preferenceBusy=true;preferenceView();try{const saved=await api.preferences(patch);config={...config,...saved};}catch(e){error(e.message);}finally{preferenceBusy=false;preferenceView();}}
-$('translation-toggle').onclick=()=>{api.preserveSize();void preferences({translationEnabled:!config.translationEnabled});};
+$('translation-toggle').onclick=()=>{delete document.body.dataset.panelMode;api.preserveSize();void preferences({translationEnabled:!config.translationEnabled});};
 $('translation-language').onchange=e=>preferences({translationLanguage:e.target.value});
 $('answer-language').onchange=e=>preferences({answerLanguage:e.target.value});
 $('transcription-language').onchange=e=>preferences({transcriptionLanguage:e.target.value});
@@ -34,7 +34,13 @@ function sections(){
  $('speech-card').hidden=!panels.speech;$('answer-card').hidden=!panels.answer;$('coding-panel').hidden=view!=='session'||!panels.coding;
  for(const [id,name] of [['speech-toggle','speech'],['answer-toggle','answer'],['coding-tab','coding']]){$(id).setAttribute('aria-pressed',String(panels[name]));$(id).classList.toggle('selected',panels[name]);}
 }
-function toggleSection(name){api.preserveSize();panels[name]=!panels[name];try{localStorage.setItem('clair-panels',JSON.stringify(panels));}catch{}showView('session');}
+function toggleSection(name){delete document.body.dataset.panelMode;api.preserveSize();panels[name]=!panels[name];try{localStorage.setItem('clair-panels',JSON.stringify(panels));}catch{}showView('session');}
+function selectMode(mode){
+ if(!['interview','coding'].includes(mode))return;
+ api.preserveSize();panels={speech:mode==='interview',answer:mode==='interview',coding:mode==='coding'};
+ document.body.dataset.panelMode=mode;try{localStorage.setItem('clair-panels',JSON.stringify(panels));}catch{}
+ $('coding-menu').hidden=true;$('coding-menu-toggle').setAttribute('aria-expanded','false');showView('session');
+}
 function showView(next){view=next;for(const name of ['session','settings','files']){$(name+'-panel').hidden=name!==next;$(name+'-tab').classList.toggle('selected',name===next);if(name===next)$(name+'-tab').setAttribute('aria-current','page');else $(name+'-tab').removeAttribute('aria-current');}sections();document.body.classList.toggle('settings-open',next!=='session');closeMenu();window.scrollTo(0,0);}
 $('speech-toggle').onclick=()=>toggleSection('speech');$('answer-toggle').onclick=()=>toggleSection('answer');
 
@@ -84,6 +90,7 @@ function renderHistory(){
 }
 $('history-hold').onclick=()=>answerFeed.resume();
 api.onEvent(e=>{
+ if(e.type==='view-shortcut')selectMode(e.mode);
  if(e.type==='preferences-changed'){config={...config,...e.config};preferenceView();}
  if(e.type==='answer-language-changed'){answerId=null;history.cancel(true,false);renderHistory();}
  if(e.type==='translation-reset'){translationId=null;translations.clear();ui('translation-status','');}
@@ -122,7 +129,7 @@ $('opacity').onchange=()=>{clearTimeout(opacityTimer);opacityVersion++;const val
 $('more-toggle').onclick=()=>{const open=$('more-menu').hidden;$('more-menu').hidden=!open;$('more-toggle').setAttribute('aria-expanded',String(open));};
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('#more-menu,#more-toggle'))closeMenu();});
 $('more-menu').addEventListener('click',e=>{if(e.target.closest('button'))closeMenu();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){toggleOpacity(false);closeMenu();if(view!=='session')settings(false);}});
+document.addEventListener('keydown',e=>{if(!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&['F1','F2'].includes(e.key)&&!config?.modeShortcuts?.[e.key]){e.preventDefault();selectMode(e.key==='F1'?'interview':'coding');return;}if(e.key==='Escape'){toggleOpacity(false);closeMenu();if(view!=='session')settings(false);}});
 $('notice').onclick=()=>{settings(true);$('key').focus();};
 $('copy-answer').onclick=async()=>{try{await api.copy(plainAnswer(displayedAnswer));$('copy-answer').title=t('Copié');setTimeout(()=>{$('copy-answer').title=t('Copier la réponse');},1500);}catch(e){error(e.message);}};
 $('audio-test').onclick=()=>{$('audio-result').hidden=true;settings(false);void start(true);};$('mac-permissions').onclick=()=>api.permissions().catch(e=>error(e.message));

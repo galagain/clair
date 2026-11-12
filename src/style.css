@@ -163,3 +163,5 @@ body.compact:not(.settings-open) .answer-feed{max-height:180px}
 .coding-result-toolbar{display:flex;justify-content:flex-end;height:23px;margin:-6px -5px 3px 0}.coding-result-toolbar .icon-button{width:24px;height:24px}.coding-result-toolbar .icon{width:14px;height:14px}
 
 #coding-receipt{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--faint);align-self:center}.coding-result-toolbar{gap:6px}
+
+body[data-panel-mode] #translation-card{display:none}

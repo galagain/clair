@@ -14,7 +14,7 @@ Une petite fenêtre pour transcrire une visio, traduire les échanges et propose
 2. Glisse tes PDF dans **Fichiers**, si nécessaire.
 3. Choisis la langue du discours et des réponses, puis clique sur **▶**.
 
-Les quatre icônes du haut affichent ou masquent Discours, Pistes, Traduction et Code, sur Mac comme sur iPhone.
+Les quatre icônes du haut affichent ou masquent Discours, Pistes, Traduction et Code, sur Mac comme sur iPhone. Sur ordinateur, **F1** affiche Discours + Pistes et **F2** affiche Code. Sur Mac, utilise **Fn + F1/F2** si les touches règlent la luminosité.
 
 Clair écoute le son de l’ordinateur et le micro. La traduction est facultative. Les nouvelles pistes s’ajoutent sous les anciennes ; remonte pour relire et clique sur **↓** pour revenir au direct.
 
