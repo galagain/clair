@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {directSender as makeSender,directSnapshot,isSendCommand} from '../extensions/firefox/client.mjs';
+import {directSender as makeSender,directSnapshot,isSendCommand,commandMode} from '../extensions/firefox/client.mjs';
 
 function directSender(api,fetchImpl,options={}){return makeSender(api,(url,init)=>init.method==='GET'?Response.json({captureMode:options.captureMode||'text'}):fetchImpl(url,init),options);}
 
@@ -53,8 +53,8 @@ test('A stuck page cannot permanently block later shortcuts or send a late captu
 test('All four named Firefox shortcuts send through the same capture action',async()=>{
  const {readFile}=await import('node:fs/promises');const manifest=JSON.parse(await readFile(new URL('../extensions/firefox/manifest.json',import.meta.url)));
  const names=Object.keys(manifest.commands);assert.equal(names.length,4);assert.ok(names.every(isSendCommand));assert.equal(isSendCommand('unrelated'),false);assert.equal(isSendCommand('send-to-clair-5'),false);
- const {tab,api}=fixture();let sent=0;const send=directSender(api,async()=>{sent++;return Response.json({ok:true});});
- for(const name of names)if(isSendCommand(name))assert.equal((await send(tab)).status,'sent');assert.equal(sent,4);
+ const {tab,api}=fixture();const sent=[];api.tabs.captureVisibleTab=async()=> 'data:image/jpeg;base64,/9j/AAAA';const send=directSender(api,async(_url,init)=>{sent.push(JSON.parse(init.body));return Response.json({ok:true});});
+ for(const name of names)if(isSendCommand(name))assert.equal((await send(tab,{captureMode:commandMode(name)})).status,'sent');assert.deepEqual(sent.map(s=>s.captureMode),['text','visual','text','visual']);assert.deepEqual(sent.map(s=>!!s.images),[false,true,false,true]);
 });
 
 test('A rejected local connection prevents screenshot or page access',async()=>{

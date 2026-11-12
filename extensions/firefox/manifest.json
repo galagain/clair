@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Clair Coding",
-  "version": "0.28.0",
+  "version": "0.28.1",
   "description": "Envoyez un énoncé et du code à Clair, uniquement à votre demande.",
   "browser_specific_settings": {
     "gecko": {
@@ -39,16 +39,19 @@
       "suggested_key": {
         "default": "Alt+Shift+C"
       },
-      "description": "Envoyer la page à Clair et analyser"
+      "description": "Envoyer le texte et le code à Clair"
     },
     "send-to-clair-2": {
-      "description": "Envoyer la page à Clair et analyser (2)"
+      "suggested_key": {
+        "default": "Alt+Shift+V"
+      },
+      "description": "Envoyer le texte, le code et les images à Clair"
     },
     "send-to-clair-3": {
-      "description": "Envoyer la page à Clair et analyser (3)"
+      "description": "Envoyer le texte et le code à Clair (2)"
     },
     "send-to-clair-4": {
-      "description": "Envoyer la page à Clair et analyser (4)"
+      "description": "Envoyer le texte, le code et les images à Clair (2)"
     }
   },
   "content_security_policy": {

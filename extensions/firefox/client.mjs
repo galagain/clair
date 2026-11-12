@@ -1,3 +1,4 @@
+export const commandMode=name=>/^send-to-clair-[24]$/.test(name)?'visual':'text';
 export const isSendCommand=name=>/^send-to-clair(?:-[234])?$/.test(name);
 import {capturePageImages} from './visual.mjs';
 import {readPage,readEditors,combineCapture} from './extract.mjs';
@@ -17,6 +18,7 @@ export async function captureTab(api,tab,{useSelection=true,captureMode='text',s
  const current=await api.tabs.get(tab.id);
  if(current.url!==tab.url)throw Error('La page a changé pendant la capture. Relancez le raccourci.');
  const capture=pages.some(page=>page.result)?combineCapture(pages,models):{statement:'',tests:'',title:tab.title||'',source:new URL(tab.url).hostname,candidates:[],warning:'Texte inaccessible : seule la zone visible de la page est capturée.'};
+ capture.captureMode=captureMode;
  if(signal?.aborted)throw Error('Capture annulée.');
  if(captureMode==='visual'){const visual=await capturePageImages(api,tab,capture.dimensions,signal);capture.images=visual.images;capture.warning=[capture.warning,visual.warning].filter(Boolean).join(' ').slice(0,1000);}
  return capture;
@@ -26,21 +28,21 @@ export function directSnapshot(capture,language){
  // Multiple unrelated editor models must not silently select the wrong file.
  const candidate=capture.candidates.length===1?capture.candidates[0]:null;
  const warning=capture.candidates.length>1?[capture.warning,'Plusieurs éditeurs : aucun code choisi automatiquement. Choisissez le bon code dans l’extension ou collez-le dans Clair.'].filter(Boolean).join(' ').slice(0,1000):captureWarning(capture,candidate);
- return {...(capture.images?.length?{images:capture.images}:{}),statement:capture.statement,code:candidate?.code||'',tests:capture.tests,title:capture.title,source:capture.source,warning,language:['python','cpp'].includes(language)?language:candidate?.language||'python'};
+ return {...(capture.captureMode?{captureMode:capture.captureMode}:{}),...(capture.images?.length?{images:capture.images}:{}),statement:capture.statement,code:candidate?.code||'',tests:capture.tests,title:capture.title,source:capture.source,warning,language:['python','cpp'].includes(language)?language:candidate?.language||'python'};
 }
 async function boundedCapture(api,tab,timeoutMs,captureMode){
  let timer;const controller=new AbortController();try{return await Promise.race([captureTab(api,tab,{useSelection:false,captureMode,signal:controller.signal}),new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(Error('Lecture de la page bloquée. Réessayez le raccourci.'));},timeoutMs);})]);}finally{clearTimeout(timer);controller.abort();}
 }
 export function directSender(api,fetchImpl=fetch,{captureTimeoutMs=10000}={}){
  let sending=false;
- return async tab=>{
+ return async (tab,{captureMode}={})=>{
   if(sending)return {status:'busy'};
   sending=true;
   try{
    const pairing=await storedConnection(api);if(!pairing)throw Error('Connectez d’abord Clair depuis l’icône de l’extension.');
    const language=(await api.storage.local.get('codingLanguage')).codingLanguage;
    const settings=await requestClair(pairing,'status',undefined,fetchImpl);
-   const capture=await boundedCapture(api,tab,captureTimeoutMs,settings.captureMode==='visual'?'visual':'text'),snapshot=directSnapshot(capture,language);
+   const capture=await boundedCapture(api,tab,captureTimeoutMs,captureMode==='text'||captureMode==='visual'?captureMode:settings.captureMode==='visual'?'visual':'text'),snapshot=directSnapshot(capture,language);
    if(!snapshot.statement.trim()&&!snapshot.code.trim()&&!snapshot.images?.length)throw Error('Aucun énoncé ou code accessible sur cette page.');
    await requestClair(pairing,'coding',snapshot,fetchImpl);
    return {status:'sent',text:'Dernier raccourci : envoyé à Clair.'};

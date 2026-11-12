@@ -1,9 +1,24 @@
 const label=value=>value?`${value.modifiers&8?'⌘ ':''}${value.modifiers&4?'⌥ ':''}${value.modifiers&2?'⌃ ':''}${value.modifiers&1?'⇧ ':''}${Number.isInteger(value.keyCode)?value.keyLabel||`Touche ${value.keyCode}`:value.button===0?'Clic gauche':value.button===1?'Clic droit':value.button===2?'Molette':`Bouton ${value.button+1}`}`:'Aucun';
-export async function installMouse(api){const $=id=>document.getElementById(id);let current;
- function render(value){current=value;$('mouse-enable').textContent=['ready','starting'].includes(value.status)?'Désactiver':'Activer';$('mouse-enable').disabled=!value.available;$('mouse-permissions').hidden=!value.available;$('mouse-last').textContent=value.last?'Détecté : '+label(value.last):'';for(const action of ['background','firefox']){$('mouse-'+action).textContent=value.learning===action?'Appuyez…':action==='firefox'?'＋ Ajouter':label(value.bindings[action]);$('mouse-'+action).disabled=value.status!=='ready';$('mouse-forget-'+action).disabled=action==='firefox'?!value.bindings.firefox.length:!value.bindings[action];}const list=$('mouse-firefox-list');list.replaceChildren();value.bindings.firefox.forEach((item,index)=>{const row=document.createElement('div');row.className='mouse-binding';const text=document.createElement('span');text.textContent=label(item);const remove=document.createElement('button');remove.className='text-button';remove.textContent='×';remove.setAttribute('aria-label','Retirer '+label(item));remove.onclick=()=>run(()=>api.mouseForget('firefox',index));row.append(text,remove);list.append(row);});$('mouse-result').textContent=value.message||(value.status==='permission'?'Autorisez Clair dans Accessibilité, puis réactivez.':value.status==='ready'?'Détection active.':value.available?'':'Disponible sur Mac.');}
+export async function installMouse(api){
+ const $=id=>document.getElementById(id);let current;
+ const action=()=>$('mouse-firefox-mode').value;
+ function render(value){
+  current=value;$('mouse-enable').textContent=['ready','starting'].includes(value.status)?'Désactiver':'Activer';$('mouse-enable').disabled=!value.available;$('mouse-permissions').hidden=!value.available;
+  $('mouse-last').textContent=value.last?'Détecté : '+label(value.last):'';
+  $('mouse-background').textContent=value.learning==='background'?'Appuyez…':label(value.bindings.background);$('mouse-background').disabled=value.status!=='ready';$('mouse-forget-background').disabled=!value.bindings.background;
+  $('mouse-firefox').textContent=value.learning&&value.learning!=='background'?'Appuyez…':'＋ Ajouter';$('mouse-firefox').disabled=value.status!=='ready';$('mouse-firefox-mode').disabled=!!value.learning;
+  $('mouse-forget-firefox').disabled=!(value.bindings[action()]||[]).length;
+  const list=$('mouse-firefox-list');list.replaceChildren();
+  for(const kind of ['firefox','firefoxVisual'])(value.bindings[kind]||[]).forEach((item,index)=>{
+   const row=document.createElement('div');row.className='mouse-binding';const text=document.createElement('span');text.textContent=label(item)+' · '+(kind==='firefox'?'Texte':'Texte + images');
+   const remove=document.createElement('button');remove.className='text-button';remove.textContent='×';remove.setAttribute('aria-label','Retirer '+text.textContent);remove.onclick=()=>run(()=>api.mouseForget(kind,index));row.append(text,remove);list.append(row);
+  });
+  $('mouse-result').textContent=value.message||(value.status==='permission'?'Autorisez Clair dans Accessibilité, puis réactivez.':value.status==='ready'?'Détection active.':value.available?'':'Disponible sur Mac.');
+ }
  async function run(fn){try{render(await fn());}catch(error){$('mouse-result').textContent=error.message;}}
  $('mouse-enable').onclick=()=>run(()=>api.mouseEnable(!['ready','starting'].includes(current.status)));
  $('mouse-permissions').onclick=()=>api.mousePermissions();
- for(const action of ['background','firefox']){$('mouse-'+action).onclick=()=>run(()=>api.mouseLearn(action));$('mouse-forget-'+action).onclick=()=>run(()=>api.mouseForget(action));}
+ $('mouse-background').onclick=()=>run(()=>api.mouseLearn('background'));$('mouse-forget-background').onclick=()=>run(()=>api.mouseForget('background'));
+ $('mouse-firefox').onclick=()=>run(()=>api.mouseLearn(action()));$('mouse-forget-firefox').onclick=()=>run(()=>api.mouseForget(action()));$('mouse-firefox-mode').onchange=()=>render(current);
  api.onEvent(event=>{if(event.type==='mouse-state')render(event);});render(await api.mouseState());
 }

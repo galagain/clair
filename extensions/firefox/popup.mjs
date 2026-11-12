@@ -26,7 +26,7 @@ $('capture').onsubmit=async event=>{
  event.preventDefault();if(busy)return;lock(true);
  try{
   if(!$('statement').value.trim()&&!$('code').value.trim()&&!capture?.images?.length)throw Error('Ajoutez un énoncé ou du code.');
-  const value={...(capture?.images?.length?{images:capture.images}:{}),statement:$('statement').value,code:$('code').value,tests:$('tests').value,language:$('language').value,title:capture?.title||'',source:capture?.source||'',warning:$('warning').textContent.slice(0,1000)};
+  const value={...(capture?.captureMode?{captureMode:capture.captureMode}:{}),...(capture?.images?.length?{images:capture.images}:{}),statement:$('statement').value,code:$('code').value,tests:$('tests').value,language:$('language').value,title:capture?.title||'',source:capture?.source||'',warning:$('warning').textContent.slice(0,1000)};
   await request('coding',value);status('Envoyé. La réponse apparaît dans Clair.');
  }catch(error){status(error.message);}finally{lock(false);}
 };

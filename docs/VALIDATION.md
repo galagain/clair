@@ -67,3 +67,5 @@ test('Visual shortcut can send an image-only page even when DOM extraction fails
  const result=await directSender(api,async(_url,init)=>{payload=JSON.parse(init.body);return Response.json({ok:true});},{captureMode:'visual'})(tab);
  assert.equal(result.status,'sent');assert.equal(payload.statement,'');assert.equal(payload.images.length,1);assert.match(payload.warning,/Texte inaccessible/);
 });
+
+Raccourcis séparés : dans un vrai Firefox isolé, Alt ⇧ V capture les images puis Alt ⇧ C renvoie du texte seul alors que le réglage de l’aperçu reste sur images. Les associations Texte et Texte + images coexistent, refusent les doublons entre types et se retirent indépendamment ; le choix dans ＋ Ajouter et le transport des modes explicites sont vérifiés dans l’application empaquetée avec API et frappes simulées.

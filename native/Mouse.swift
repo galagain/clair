@@ -49,11 +49,11 @@ var lastAction: TimeInterval = 0
 func configure(_ raw: [String: Any]) {
  enabled = raw["enabled"] as? Bool ?? false; learning = raw["learning"] as? Bool ?? false; learningKeys = raw["learningKeys"] as? Bool ?? false
  bindings.removeAll()
- if let values = raw["bindings"] as? [String: Any] { for action in ["background", "firefox"] { bindings[action] = validBindings(values[action]) } }
+ if let values = raw["bindings"] as? [String: Any] { for action in ["background", "firefox", "firefoxVisual"] { bindings[action] = validBindings(values[action]) } }
 }
-func firefoxShortcut() -> Bool {
+func firefoxShortcut(_ action: String) -> Bool {
  guard let target = NSWorkspace.shared.frontmostApplication, firefoxIDs.contains(target.bundleIdentifier ?? "") else { return false }
- guard let down = CGEvent(keyboardEventSource: nil, virtualKey: 8, keyDown: true), let up = CGEvent(keyboardEventSource: nil, virtualKey: 8, keyDown: false) else { return false }
+ guard let down = CGEvent(keyboardEventSource: nil, virtualKey: action == "firefoxVisual" ? 9 : 8, keyDown: true), let up = CGEvent(keyboardEventSource: nil, virtualKey: action == "firefoxVisual" ? 9 : 8, keyDown: false) else { return false }
  down.flags = [.maskAlternate, .maskShift]; up.flags = [.maskAlternate, .maskShift]
  down.setIntegerValueField(.eventSourceUserData, value: syntheticTag); up.setIntegerValueField(.eventSourceUserData, value: syntheticTag)
  down.postToPid(target.processIdentifier); up.postToPid(target.processIdentifier); return true
@@ -87,13 +87,13 @@ let callback: CGEventTapCallBack = { _, type, event, _ in
  guard enabled else { return Unmanaged.passUnretained(event) }
  // Ordinary typing is never published or retained. Only selected shortcuts match.
  if let button { output(["type": "button", "button": button, "modifiers": mods, "learning": false]) }
- for action in ["background", "firefox"] {
+ for action in ["background", "firefox", "firefoxVisual"] {
   guard let choices = bindings[action], choices.contains(where: { matches($0, key: key, button: button, mods: mods) }) else { continue }
-  if action == "firefox" && !firefoxIDs.contains(NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "") { return Unmanaged.passUnretained(event) }
+  if action != "background" && !firefoxIDs.contains(NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "") { return Unmanaged.passUnretained(event) }
   if let key { consumedKeys.insert(key) }; if let button { consumed.insert(button) }
   let now = ProcessInfo.processInfo.systemUptime
   if now - lastAction < 0.35 { return nil }; lastAction = now
-  if action == "firefox" { let sent = firefoxShortcut(); output(["type": "action", "action": action, "sent": sent]) }
+  if action != "background" { let sent = firefoxShortcut(action); output(["type": "action", "action": action, "sent": sent]) }
   else { output(["type": "action", "action": action]) }
   return nil
  }

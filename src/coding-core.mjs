@@ -21,6 +21,7 @@ export function codingSnapshot(value){
   });
  }
  if(!result.statement.trim()&&!result.code.trim()&&!result.images?.length)throw Error('Ajoutez un énoncé ou du code.');
+ if(value.captureMode!==undefined){if(!['text','visual'].includes(value.captureMode))throw Error('Mode de capture invalide.');result.captureMode=value.captureMode;}
  result.language=value.language==='cpp'?'cpp':'python';
  return result;
 }

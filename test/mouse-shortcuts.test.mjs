@@ -32,3 +32,11 @@ test('Add learns a keyboard chord alongside mouse bindings, persists it and igno
  await f.mouse.forget('firefox',0);assert.deepEqual(f.mouse.config.bindings.firefox,[{button:4,modifiers:0}]);
  f.mouse.learn('firefox');f.event({type:'learn-canceled'});assert.equal(f.mouse.learning,null);assert.equal(f.writes.at(-1).learningKeys,false);f.mouse.stop();
 });
+
+test('Text and visual shortcuts coexist, reject overlaps and remove independently',async()=>{
+ const f=setup();await f.mouse.enable(true);f.event({type:'ready'});
+ for(const [action,button] of [['firefox',4],['firefoxVisual',5]]){f.mouse.learn(action);f.event({type:'button',button,modifiers:0,learning:true});await f.mouse.queue;}
+ assert.equal(f.mouse.config.bindings.firefox[0].button,4);assert.equal(f.mouse.config.bindings.firefoxVisual[0].button,5);
+ f.mouse.learn('firefoxVisual');assert.equal(f.writes.at(-1).learningKeys,true);f.event({type:'button',button:4,modifiers:0,learning:true});await f.mouse.queue;assert.equal(f.mouse.config.bindings.firefoxVisual.length,1);assert.match(f.events.at(-1).message,/différents/);
+ await f.mouse.forget('firefoxVisual',0);assert.equal(f.mouse.config.bindings.firefox.length,1);assert.equal(f.mouse.config.bindings.firefoxVisual.length,0);f.mouse.stop();
+});
