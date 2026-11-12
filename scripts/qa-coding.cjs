@@ -14,6 +14,8 @@ const os=require('node:os');
   const page=await app.firstWindow();page.on('pageerror',error=>errors.push(error.message));
   await page.waitForFunction(()=>!!document.querySelector('#coding-tab').onclick);
   assert.equal((await page.evaluate(()=>window.clair.config())).hasKey,false);
+  assert.equal((await page.evaluate(()=>window.clair.config())).codingAutoVoice,false);
+  assert.equal(await page.locator('#coding-auto-voice').isChecked(),false);
   // Replace the transport only in this isolated process. No real key/API/audio.
   await app.evaluate(async({app,clipboard,safeStorage})=>{
    clipboard.writeText=text=>{global.codingQaClipboard=text;};
