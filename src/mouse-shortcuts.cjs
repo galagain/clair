@@ -1,6 +1,12 @@
 const {spawn}=require('node:child_process');
 function binding(value){if(value==null)return null;if(!Number.isInteger(value.button)||value.button<0||value.button>31||!Number.isInteger(value.modifiers)||value.modifiers<0||value.modifiers>15)throw Error('Bouton de souris invalide.');if(value.button===0&&!value.modifiers)throw Error('Pour le clic gauche, maintenez aussi ⌥, ⌃, ⇧ ou ⌘.');return {button:value.button,modifiers:value.modifiers};}
-function configuration(raw={}){const result={enabled:raw.enabled===true,bindings:{background:binding(raw.bindings?.background),firefox:binding(raw.bindings?.firefox)}};if(result.bindings.background&&JSON.stringify(result.bindings.background)===JSON.stringify(result.bindings.firefox))throw Error('Choisissez deux boutons ou combinaisons différents.');return result;}
+function configuration(raw={}){
+ const old=raw.bindings?.firefox,firefox=(Array.isArray(old)?old:old==null?[]:[old]).map(value=>{const result=binding(value);if(!result)throw Error('Bouton de souris invalide.');return result;});
+ if(firefox.length>12)throw Error('12 boutons Firefox maximum.');
+ const background=binding(raw.bindings?.background),seen=new Set(background?[JSON.stringify(background)]:[]);
+ for(const item of firefox){const key=JSON.stringify(item);if(seen.has(key))throw Error('Choisissez des boutons ou combinaisons différents.');seen.add(key);}
+ return {enabled:raw.enabled===true,bindings:{background,firefox}};
+}
 class MouseShortcuts {
  constructor({executable,emit,action,save=async()=>{},spawnImpl=spawn,available=process.platform==='darwin'}){Object.assign(this,{executable,emit,action,save,spawn:spawnImpl,available});this.config=configuration();this.status='off';this.child=null;this.learning=null;this.last=null;this.queue=Promise.resolve();this.revision=0;}
  state(){return {...this.config,available:this.available,status:this.status,learning:this.learning,last:this.last};}
@@ -17,14 +23,14 @@ class MouseShortcuts {
   if(event.type==='button'){
    if(!Number.isInteger(event.button)||event.button<0||event.button>31||!Number.isInteger(event.modifiers)||event.modifiers<0||event.modifiers>15)return;
    this.last={button:event.button,modifiers:event.modifiers};
-   if(this.learning&&event.learning){const action=this.learning,selected={...this.last},revision=this.revision;this.cancelLearn();this.queue=this.queue.then(async()=>{if(revision!==this.revision)return;try{const next=configuration({...this.config,bindings:{...this.config.bindings,[action]:selected}});await this.save(next);if(revision!==this.revision)return;this.config=next;this.write();this.notify('Enregistré.');}catch(error){this.write();this.notify(error.message);}});}
+   if(this.learning&&event.learning){const action=this.learning,selected={...this.last},revision=this.revision;this.cancelLearn();this.queue=this.queue.then(async()=>{if(revision!==this.revision)return;try{const next=configuration({...this.config,bindings:{...this.config.bindings,[action]:action==='firefox'?[...this.config.bindings.firefox,selected]:selected}});await this.save(next);if(revision!==this.revision)return;this.config=next;this.write();this.notify('Enregistré.');}catch(error){this.write();this.notify(error.message);}});}
    else this.notify();return;
   }
   if(event.type==='action'&&this.config.enabled&&!this.learning&&this.status==='ready'&&['background','firefox'].includes(event.action)){if(event.action==='background')this.action('background');else this.notify(event.sent?'Raccourci envoyé à Firefox.':'Ouvrez Firefox au premier plan.');}
  }
  learn(action){if(!['background','firefox'].includes(action))throw Error('Action inconnue.');if(this.status!=='ready')throw Error('Activez d’abord la détection et autorisez Clair.');this.cancelLearn();this.revision++;this.learning=action;this.write();this.notify('Appuyez sur le bouton à associer (10 s).');this.timer=setTimeout(()=>{this.cancelLearn();this.write();this.notify('Choix annulé.');},10000);return this.state();}
  cancelLearn(){clearTimeout(this.timer);this.learning=null;}
- async forget(action){if(!['background','firefox'].includes(action))throw Error('Action inconnue.');this.cancelLearn();const revision=++this.revision;const next=configuration({...this.config,bindings:{...this.config.bindings,[action]:null}});await this.save(next);if(revision!==this.revision)return this.state();this.config=next;this.write();this.notify();return this.state();}
+ async forget(action,index){if(!['background','firefox'].includes(action))throw Error('Action inconnue.');if(index!==undefined&&(action!=='firefox'||!Number.isInteger(index)||index<0||index>=this.config.bindings.firefox.length))throw Error('Association inconnue.');this.cancelLearn();const revision=++this.revision;const next=configuration({...this.config,bindings:{...this.config.bindings,[action]:action==='firefox'?(index===undefined?[]:this.config.bindings.firefox.filter((_,i)=>i!==index)):null}});await this.save(next);if(revision!==this.revision)return this.state();this.config=next;this.write();this.notify();return this.state();}
  fail(message){this.stop();this.notify(message);}
  stop(){this.revision++;this.cancelLearn();const child=this.child;this.child=null;if(child){child.stdin.end();child.kill();}this.status='off';this.notify();}
 }

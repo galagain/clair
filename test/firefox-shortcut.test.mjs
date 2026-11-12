@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {directSender,directSnapshot} from '../extensions/firefox/client.mjs';
+import {directSender,directSnapshot,isSendCommand} from '../extensions/firefox/client.mjs';
 
 function fixture(){
  const tab={id:7,url:'https://exercise.test/task'},calls=[];
@@ -46,4 +46,11 @@ test('A stuck page cannot permanently block later shortcuts or send a late captu
  assert.match((await send(tab)).text,/Lecture de la page bloquée/);assert.equal(count,0);
  api.scripting.executeScript=execute;assert.equal((await send(tab)).status,'sent');assert.equal(count,1);
  release([{frameId:0,result:{statement:'Late old exercise',candidates:[]}}]);await new Promise(resolve=>setImmediate(resolve));assert.equal(count,1);
+});
+
+test('All four named Firefox shortcuts send through the same capture action',async()=>{
+ const {readFile}=await import('node:fs/promises');const manifest=JSON.parse(await readFile(new URL('../extensions/firefox/manifest.json',import.meta.url)));
+ const names=Object.keys(manifest.commands);assert.equal(names.length,4);assert.ok(names.every(isSendCommand));assert.equal(isSendCommand('unrelated'),false);assert.equal(isSendCommand('send-to-clair-5'),false);
+ const {tab,api}=fixture();let sent=0;const send=directSender(api,async()=>{sent++;return Response.json({ok:true});});
+ for(const name of names)if(isSendCommand(name))assert.equal((await send(tab)).status,'sent');assert.equal(sent,4);
 });

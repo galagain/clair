@@ -6,25 +6,32 @@ import ApplicationServices
 func output(_ value: [String: Any]) { if let data = try? JSONSerialization.data(withJSONObject: value), var line = String(data: data, encoding: .utf8) { line += "\n"; FileHandle.standardOutput.write(Data(line.utf8)) } }
 func modifiers(_ flags: CGEventFlags) -> Int { (flags.contains(.maskShift) ? 1 : 0) | (flags.contains(.maskControl) ? 2 : 0) | (flags.contains(.maskAlternate) ? 4 : 0) | (flags.contains(.maskCommand) ? 8 : 0) }
 func validBinding(_ raw: Any?) -> [String: Int]? { guard let value = raw as? [String: Int], let button = value["button"], let mods = value["modifiers"], (0...31).contains(button), (0...15).contains(mods), button != 0 || mods != 0 else { return nil }; return ["button": button, "modifiers": mods] }
+func validBindings(_ raw: Any?) -> [[String: Int]] {
+ let items = raw as? [Any] ?? (raw.map { [$0] } ?? [])
+ return items.compactMap { validBinding($0) }.prefix(12).map { $0 }
+}
 let firefoxIDs: Set<String> = ["org.mozilla.firefox", "org.mozilla.firefoxdeveloperedition", "org.mozilla.nightly"]
 if CommandLine.arguments.contains("--self-test") {
  precondition(modifiers([.maskShift, .maskAlternate]) == 5)
  precondition(validBinding(["button": 0, "modifiers": 0]) == nil)
  precondition(validBinding(["button": 31, "modifiers": 4]) != nil)
+ precondition(validBindings([["button": 3, "modifiers": 0], ["button": 4, "modifiers": 8]]).count == 2)
+ precondition(validBindings(["button": 3, "modifiers": 0]).count == 1)
+ precondition(validBindings(nil).isEmpty)
  output(["type": "self-test", "ok": true]); exit(0)
 }
 let request = CommandLine.arguments.contains("--request")
 let trusted = AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: request] as CFDictionary)
 if !trusted { output(["type": "permission", "message": "Autorisez Clair dans Accessibilité, puis cliquez sur Activer."]); exit(2) }
 var enabled = false, learning = false
-var bindings: [String: [String: Int]] = [:]
+var bindings: [String: [[String: Int]]] = [:]
 var consumed = Set<Int>()
 var tap: CFMachPort?
 var lastAction: TimeInterval = 0
 func configure(_ raw: [String: Any]) {
  enabled = raw["enabled"] as? Bool ?? false; learning = raw["learning"] as? Bool ?? false
  bindings.removeAll()
- if let values = raw["bindings"] as? [String: Any] { for action in ["background", "firefox"] { if let value = validBinding(values[action]) { bindings[action] = value } } }
+ if let values = raw["bindings"] as? [String: Any] { for action in ["background", "firefox"] { bindings[action] = validBindings(values[action]) } }
 }
 func firefoxShortcut() -> Bool {
  guard let target = NSWorkspace.shared.frontmostApplication, firefoxIDs.contains(target.bundleIdentifier ?? "") else { return false }
@@ -42,7 +49,7 @@ let callback: CGEventTapCallBack = { _, type, event, _ in
  guard enabled else { return Unmanaged.passUnretained(event) }
  output(["type": "button", "button": button, "modifiers": mods, "learning": false])
  for action in ["background", "firefox"] {
-  guard let binding = bindings[action], binding["button"] == button, binding["modifiers"] == mods else { continue }
+  guard let choices = bindings[action], choices.contains(where: { $0["button"] == button && $0["modifiers"] == mods }) else { continue }
   if action == "firefox" && !firefoxIDs.contains(NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "") { return Unmanaged.passUnretained(event) }
   consumed.insert(button)
   let now = ProcessInfo.processInfo.systemUptime

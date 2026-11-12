@@ -1,3 +1,4 @@
+export const isSendCommand=name=>/^send-to-clair(?:-[234])?$/.test(name);
 import {readPage,readEditors,combineCapture} from './extract.mjs';
 
 export function connection(value){const match=/^clair:(\d{1,5}):([a-f0-9]{64})$/.exec(String(value||'').trim());if(!match||Number(match[1])<1||Number(match[1])>65535)throw Error('Copiez le code depuis Clair → Coding → Firefox.');return {port:Number(match[1]),token:match[2]};}

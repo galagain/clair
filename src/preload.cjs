@@ -2,7 +2,7 @@ const {contextBridge,ipcRenderer}=require('electron');
 const call=(channel,...args)=>ipcRenderer.invoke(channel,...args).then(r=>{if(!r.ok)throw Error(r.error);return r.value});
 contextBridge.exposeInMainWorld('clair',{
  mirrorState:()=>call('mirror:state'),mirrorStart:(source,target,quality)=>call('mirror:start',source,target,quality),mirrorStop:()=>call('mirror:stop'),
- mouseState:()=>call('mouse:state'),mouseEnable:value=>call('mouse:enable',value),mouseLearn:action=>call('mouse:learn',action),mouseForget:action=>call('mouse:forget',action),mousePermissions:()=>call('mouse:permissions'),
+ mouseState:()=>call('mouse:state'),mouseEnable:value=>call('mouse:enable',value),mouseLearn:action=>call('mouse:learn',action),mouseForget:(action,index)=>call('mouse:forget',action,index),mousePermissions:()=>call('mouse:permissions'),
  phoneState:()=>call('phone:state'),phoneStart:address=>call('phone:start',address),phoneStop:()=>call('phone:stop'),phonePublish:value=>ipcRenderer.send('phone:publish',value),
  codingState:()=>call('coding:state'),codingReview:()=>call('coding:review'),codingAnalyze:(snapshot,action)=>call('coding:analyze',snapshot,action),codingCancel:()=>call('coding:cancel'),codingUndo:()=>call('coding:undo'),codingClear:()=>call('coding:clear'),codingPair:()=>call('coding:pair'),codingDisconnect:()=>call('coding:disconnect'),codingExtension:()=>call('coding:extension'),
  preserveSize:()=>ipcRenderer.send('window:preserve-size'),overlayLayout:value=>ipcRenderer.send('window:layout',value),overlayRefresh:()=>ipcRenderer.send('window:mouse-refresh'),overlayHold:value=>ipcRenderer.send('window:mouse-hold',value),

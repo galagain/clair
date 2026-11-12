@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Clair Coding",
-  "version": "0.26.2",
+  "version": "0.27.0",
   "description": "Envoyez un énoncé et du code à Clair, uniquement à votre demande.",
   "browser_specific_settings": {
     "gecko": {
@@ -40,6 +40,15 @@
         "default": "Alt+Shift+C"
       },
       "description": "Envoyer la page à Clair et analyser"
+    },
+    "send-to-clair-2": {
+      "description": "Envoyer la page à Clair et analyser (2)"
+    },
+    "send-to-clair-3": {
+      "description": "Envoyer la page à Clair et analyser (3)"
+    },
+    "send-to-clair-4": {
+      "description": "Envoyer la page à Clair et analyser (4)"
     }
   },
   "content_security_policy": {
