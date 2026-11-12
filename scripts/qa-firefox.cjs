@@ -9,8 +9,8 @@ const {CodingBridge}=require('../src/coding-bridge.cjs');
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function until(fn){let last;for(let i=0;i<80;i++){try{last=await fn();if(last)return last;}catch(error){last=error;}await pause(100);}throw Error('Firefox test timed out: '+String(last));}
 (async()=>{
- const captures=[];let session,driver,driverLog='';
- const bridge=new CodingBridge({port:0,receive:value=>{captures.push(value);return {id:captures.length};}});
+ const captures=[];let captureMode='text';let session,driver,driverLog='';
+ const bridge=new CodingBridge({port:0,settings:()=>({captureMode}),receive:value=>{captures.push(value);return {id:captures.length};}});
  const fixture=http.createServer((_req,res)=>{res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});res.end(`<!doctype html><title>Coding fixture</title><main><h1>Two Sum</h1><p id="problem">Find two indices whose values add up to the target.</p><p hidden>HIDDEN_SECRET</p><input type="password" value="PASSWORD_SECRET"><textarea>UNRELATED_FORM_SECRET</textarea><div class="monaco-editor"><div class="view-lines"><div class="view-line">VISIBLE_FRAGMENT</div></div></div><div role="log">Input [3, 3], target 6</div></main><script>window.monaco={editor:{getModels:()=>[{getValue:()=>"def solve(nums, target):\\n    return []",getLanguageId:()=>"python"}]}};</script>`);});
  const reservation=http.createServer();await new Promise(resolve=>reservation.listen(0,'127.0.0.1',resolve));const port=reservation.address().port;await new Promise(resolve=>reservation.close(resolve));
  const base=`http://127.0.0.1:${port}`;
@@ -80,10 +80,16 @@ async function until(fn){let last;for(let i=0;i<80;i++){try{last=await fn();if(l
   await command('/moz/context',{context:'content'});await shortcut();await until(()=>captures.length===3);assert.match(captures[2].warning,/manquer des lignes/);
   await command('/execute/sync',{script:"document.querySelector('#problem').textContent='Second exercise: reverse a linked list.';const range=document.createRange();range.selectNodeContents(document.querySelector('h1'));getSelection().removeAllRanges();getSelection().addRange(range);",args:[]});
   await shortcut();await until(()=>captures.length===4);assert.match(captures[3].statement,/Second exercise: reverse a linked list/);
+  captureMode='visual';
+  await command('/execute/sync',{script:"const image=document.createElement('img');image.id='visual-fixture';image.style.cssText='display:block;margin-top:1800px;width:320px;height:160px';image.src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"320\" height=\"160\"><rect width=\"320\" height=\"160\" fill=\"#e22469\"/><text x=\"20\" y=\"80\" fill=\"white\">IMAGE-ONLY INSTRUCTION</text></svg>');document.body.append(image);",args:[]});
+  await until(()=>command('/execute/sync',{script:"return document.querySelector('#visual-fixture').complete;",args:[]}));
+  await shortcut();await until(()=>captures.length===5);assert.ok(captures[4].images.length>=2);assert.match(captures[4].images[0].url,/^data:image\/jpeg;base64,/);
+  const {loadImage,createCanvas}=require('@napi-rs/canvas');const tile=await loadImage(Buffer.from(captures[4].images.at(-1).url.split(',')[1],'base64'));assert.equal(tile.width,captures[4].images.at(-1).width);assert.equal(tile.height,captures[4].images.at(-1).height);
+  const canvas=createCanvas(tile.width,tile.height),ctx=canvas.getContext('2d');ctx.drawImage(tile,0,0);const pixels=ctx.getImageData(0,0,tile.width,tile.height).data;let found=false;for(let i=0;i<pixels.length;i+=4)if(pixels[i]>200&&pixels[i+1]<70&&pixels[i+2]>70&&pixels[i+2]<150){found=true;break;}assert.equal(found,true,'Offscreen image must appear in a captured tile');
   await bridge.close();await shortcut();await pause(300);
   await command('/moz/context',{context:'chrome'});
   assert.equal(await chrome("return document.querySelector('browser[webextension-view-type=popup]')?.closest('panel')?.state==='open';"),false);
-  await until(()=>chrome("return document.querySelector('#coding_clair_galagain-BAP .toolbarbutton-badge')?.textContent==='!';"));assert.equal(captures.length,4);
+  await until(()=>chrome("return document.querySelector('#coding_clair_galagain-BAP .toolbarbutton-badge')?.textContent==='!';"));assert.equal(captures.length,5);
   console.log('Firefox QA passed: real temporary add-on, activeTab, selection, full model, partial-code warning, pairing, direct keyboard send without popup, unchanged editor and disconnected shortcut. No OpenAI requests.');
  }catch(error){try{await command('/moz/context',{context:'chrome'});console.error('Shortcut diagnostic:',await chrome("return {key:document.querySelector('#ext-keyset-id-coding_clair_galagain key')?.outerHTML,title:document.getElementById('coding_clair_galagain-BAP')?.getAttribute('tooltiptext'),badge:document.querySelector('#coding_clair_galagain-BAP .toolbarbutton-badge')?.textContent};"));}catch{}console.error(driverLog);throw error;}
  finally{if(session)await fetch(base+'/session/'+session.sessionId,{method:'DELETE'}).catch(()=>{});driver?.kill();await bridge.close();fixture.closeAllConnections();await new Promise(resolve=>fixture.close(resolve));}

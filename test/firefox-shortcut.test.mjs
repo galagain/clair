@@ -1,6 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {directSender,directSnapshot,isSendCommand} from '../extensions/firefox/client.mjs';
+import {directSender as makeSender,directSnapshot,isSendCommand} from '../extensions/firefox/client.mjs';
+
+function directSender(api,fetchImpl,options={}){return makeSender(api,(url,init)=>init.method==='GET'?Response.json({captureMode:options.captureMode||'text'}):fetchImpl(url,init),options);}
 
 function fixture(){
  const tab={id:7,url:'https://exercise.test/task'},calls=[];
@@ -53,4 +55,15 @@ test('All four named Firefox shortcuts send through the same capture action',asy
  const names=Object.keys(manifest.commands);assert.equal(names.length,4);assert.ok(names.every(isSendCommand));assert.equal(isSendCommand('unrelated'),false);assert.equal(isSendCommand('send-to-clair-5'),false);
  const {tab,api}=fixture();let sent=0;const send=directSender(api,async()=>{sent++;return Response.json({ok:true});});
  for(const name of names)if(isSendCommand(name))assert.equal((await send(tab)).status,'sent');assert.equal(sent,4);
+});
+
+test('A rejected local connection prevents screenshot or page access',async()=>{
+ const {api,tab,calls}=fixture();let screenshots=0;api.tabs.captureVisibleTab=async()=>{screenshots++;};
+ const result=await makeSender(api,async()=>Response.json({error:'Reconnectez Firefox.'},{status:401}))(tab);
+ assert.equal(result.status,'error');assert.equal(calls.length,0);assert.equal(screenshots,0);
+});
+test('Visual shortcut can send an image-only page even when DOM extraction fails',async()=>{
+ const {api,tab}=fixture();api.scripting.executeScript=async()=>{throw Error('No DOM');};api.tabs.captureVisibleTab=async()=> 'data:image/jpeg;base64,/9j/AAAA';let payload;
+ const result=await directSender(api,async(_url,init)=>{payload=JSON.parse(init.body);return Response.json({ok:true});},{captureMode:'visual'})(tab);
+ assert.equal(result.status,'sent');assert.equal(payload.statement,'');assert.equal(payload.images.length,1);assert.match(payload.warning,/Texte inaccessible/);
 });

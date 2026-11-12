@@ -20,18 +20,18 @@ export async function installCoding(api,{show,toggle}){
   solution.dataset.id=current?String(current.id):'';solution.textContent=text;solution.hidden=!text;$('coding-empty').hidden=busy||!!text;
   controls();fit();feed.scrollTop=top;
  }
- function fill(value){snapshot=value;if(!value)return;for(const field of ['statement','code','tests','language'])$('coding-'+field).value=value[field]||'';$('coding-source').textContent=value.source||'';$('coding-warning').textContent=value.warning||'';}
+ function fill(value){snapshot=value;$('coding-images-count').textContent=value?.images?.length?value.images.length+' capture(s) de page jointe(s)':'';if(!value)return;for(const field of ['statement','code','tests','language'])$('coding-'+field).value=value[field]||'';$('coding-source').textContent=value.source||'';$('coding-warning').textContent=value.warning||'';}
  function input(){return {...snapshot,statement:$('coding-statement').value,code:$('coding-code').value,tests:$('coding-tests').value,language:$('coding-language').value};}
- function reset(){revision++;current=null;snapshot=null;busy=false;adaptId=null;canUndo=false;for(const field of ['statement','code','tests'])$('coding-'+field).value='';$('coding-source').textContent='';$('coding-warning').textContent='';$('coding-input').open=true;message('');$('coding-receipt').textContent='';render();feed.scrollTop=0;}
+ function reset(){revision++;current=null;snapshot=null;$('coding-images-count').textContent='';busy=false;adaptId=null;canUndo=false;for(const field of ['statement','code','tests'])$('coding-'+field).value='';$('coding-source').textContent='';$('coding-warning').textContent='';$('coding-input').open=true;message('');$('coding-receipt').textContent='';render();feed.scrollTop=0;}
  api.onEvent(event=>{
-  if(event.type==='preferences-changed')$('coding-auto-voice').checked=event.config.codingAutoVoice;
+  if(event.type==='preferences-changed'){$('coding-auto-voice').checked=event.config.codingAutoVoice;$('coding-capture-mode').value=event.config.codingCaptureMode;}
   if(!event.type.startsWith('coding-'))return;changed=true;
   if(event.type==='coding-adapting'){adaptId=event.id;busy=true;message(event.manual?'Réanalyse des échanges…':'Adaptation à votre voix…');controls();return;}
   if(event.type==='coding-updated'){revision++;current={...event.item};canUndo=!!event.canUndo;adaptId=null;busy=false;message('');render();return;}
   if(['coding-unchanged','coding-adapt-error','coding-adapt-canceled'].includes(event.type)&&(event.id===adaptId||event.id==null)){adaptId=null;busy=false;message(event.error||(event.manual?'Code déjà adapté aux échanges.':''));controls();return;}
   if(event.type==='coding-start'){
    revision++;adaptId=null;canUndo=false;current={...event.item};fill(event.snapshot);busy=true;closeMenu();show();$('coding-input').open=false;$('coding-browser').open=false;
-   $('coding-receipt').textContent='Reçu · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+(snapshot.source?' · '+snapshot.source:'');$('coding-receipt').title=snapshot.title||'Exercice reçu';message('Résolution…');render();feed.scrollTop=0;
+   $('coding-receipt').textContent='Reçu · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+(snapshot.source?' · '+snapshot.source:'')+(snapshot.images?.length?' · '+snapshot.images.length+' image(s)':'');$('coding-receipt').title=snapshot.title||'Exercice reçu';message('Résolution…');render();feed.scrollTop=0;
   }
   if(event.type==='coding-delta'&&event.id===current?.id){current.text=event.text;render();}
   if(['coding-done','coding-error','coding-canceled'].includes(event.type)&&event.id===current?.id){current.state=event.type.slice(7);current.error=event.error;busy=false;message(event.error||(current.state==='canceled'?'Arrêtée.':''));render();}
@@ -45,7 +45,8 @@ export async function installCoding(api,{show,toggle}){
  $('coding-tab').onclick=toggle;
  $('coding-undo').onclick=()=>api.codingUndo().catch(error=>message(error.message));
  $('coding-auto-voice').onchange=async()=>{const input=$('coding-auto-voice');input.disabled=true;try{const saved=await api.preferences({codingAutoVoice:input.checked});input.checked=saved.codingAutoVoice;}catch(error){input.checked=!input.checked;message(error.message);}finally{input.disabled=false;}};
- try{$('coding-auto-voice').checked=(await api.config()).codingAutoVoice;}catch(error){message(error.message);}
+ $('coding-capture-mode').onchange=async()=>{const select=$('coding-capture-mode');select.disabled=true;try{const saved=await api.preferences({codingCaptureMode:select.value});select.value=saved.codingCaptureMode;}catch(error){message(error.message);}finally{select.disabled=false;}};
+ try{const config=await api.config();$('coding-auto-voice').checked=config.codingAutoVoice;$('coding-capture-mode').value=config.codingCaptureMode;}catch(error){message(error.message);}
  $('coding-pair').onclick=async()=>{try{await api.codingPair();$('coding-connection').textContent='Code copié. Collez-le dans l’extension Firefox.';}catch(error){$('coding-connection').textContent=error.message;}};
  $('coding-disconnect').onclick=async()=>{try{await api.codingDisconnect();$('coding-connection').textContent='Firefox déconnecté.';}catch(error){$('coding-connection').textContent=error.message;}};
  $('coding-extension').onclick=()=>api.codingExtension().catch(error=>{$('coding-connection').textContent=error.message;});

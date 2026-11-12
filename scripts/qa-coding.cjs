@@ -32,7 +32,7 @@ const os=require('node:os');
    const original=CodingEngine.prototype.run;
    CodingEngine.prototype.run=function(entry,args){
     this.fetch=async(_url,init)=>{
-     const body=JSON.parse(init.body),input=JSON.parse(body.input[0].content),exercise=input.exercice;
+     const body=JSON.parse(init.body),input=JSON.parse(Array.isArray(body.input[0].content)?body.input[0].content[0].text:body.input[0].content),exercise=input.exercice;
      if(body.instructions.startsWith('Explique pédagogiquement')){global.codingQaNotes=input;return new Response('data: '+JSON.stringify({type:'response.output_text.delta',delta:'[[REPONSE]] • **Approche** : parcourir les valeurs.\n• Retenir les valeurs déjà vues.\n• Complexité : O(n) en temps et en mémoire.'})+'\n\ndata: '+JSON.stringify({type:'response.completed'})+'\n\n');}
      global.codingQaRequests=(global.codingQaRequests||0)+1;global.codingQaBody=body;
      if(input.echanges)await new Promise(resolve=>{global.codingQaReviewRelease=resolve;});
@@ -83,7 +83,7 @@ const os=require('node:os');
   await page.locator('#coding-browser').evaluate(el=>el.open=true);await page.locator('#coding-pair').click();
   const pairing=await app.evaluate(()=>global.codingQaClipboard);assert.match(pairing,/^clair:\d+:[a-f0-9]{64}$/);
   const [,port,token]=pairing.split(':');
-  const send=title=>fetch(`http://127.0.0.1:${port}/v1/coding`,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({statement:'Calculate the sum.',code:'def sum_values(xs):\n    return sum(xs)',language:'python',source:'exercise.test',title})});
+  const send=(title,images)=>fetch(`http://127.0.0.1:${port}/v1/coding`,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({statement:'Calculate the sum.',code:'def sum_values(xs):\n    return sum(xs)',language:'python',source:'exercise.test',title,...(images?{images}:{})})});
   assert.equal((await send('Slow')).status,202);
   await page.waitForFunction(()=>!document.querySelector('#coding-stop').hidden&&document.querySelector('#coding-solution').textContent==='');
   assert.equal((await send('Fixture')).status,202);
@@ -95,6 +95,11 @@ const os=require('node:os');
   // Stale events cannot change the replacement or its controls.
   await app.evaluate(({BrowserWindow})=>{const wc=BrowserWindow.getAllWindows()[0].webContents;wc.send('clair:event',{type:'coding-delta',id:1,text:'OLD_RESULT'});wc.send('clair:event',{type:'coding-error',id:1,error:'Old error'});});
   assert.equal(await page.locator('#coding-solution').textContent(),'def sum_values(xs):\n    return sum(xs)');assert.equal(await page.locator('#coding-status').textContent(),'');
+  await openMenu();await page.locator('#coding-capture-mode').selectOption('visual');assert.equal((await page.evaluate(()=>window.clair.config())).codingCaptureMode,'visual');await page.locator('#coding-menu-close').click();
+  const status=await fetch(`http://127.0.0.1:${port}/v1/status`,{headers:{Authorization:'Bearer '+token}}).then(r=>r.json());assert.equal(status.captureMode,'visual');
+  const countBeforeMissing=await app.evaluate(()=>global.codingQaRequests);assert.equal((await send('Fixture')).status,400);assert.equal(await app.evaluate(()=>global.codingQaRequests),countBeforeMissing);
+  const image={url:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=',width:1,height:1};assert.equal((await send('Fixture',[image])).status,202);await page.waitForFunction(()=>document.querySelector('#coding-receipt').textContent.includes('1 image')&&document.querySelector('#coding-stop').hidden);
+  const parts=await app.evaluate(()=>global.codingQaBody.input[0].content);assert.equal(parts[1].type,'input_image');assert.equal(parts[1].image_url,image.url);
   await page.evaluate(()=>window.clair.preferences({codingAutoVoice:true}));
   const requests=await app.evaluate(()=>global.codingQaRequests);
   await app.evaluate(()=>{global.codingQaInterview.running=true;global.codingQaInterview.notify('transcript',{id:'voice-system',speaker:'system',final:true,text:'Use a loop to sum the numbers.'});global.codingQaInterview.notify('transcript',{id:'voice-mic',speaker:'microphone',final:false,text:'Use a loop'});});
@@ -104,7 +109,7 @@ const os=require('node:os');
   assert.equal(await page.locator('#coding-solution').textContent(),'def sum_values(xs):\n    return sum(xs)');
   await app.evaluate(()=>global.codingQaVoiceRelease());
   await page.waitForFunction(()=>document.querySelector('#coding-solution').textContent.includes('# Accumuler'));
-  assert.match(await app.evaluate(()=>JSON.parse(global.codingQaBody.input[0].content).paroles),/Use a loop/);
+  assert.match(await app.evaluate(()=>JSON.parse(Array.isArray(global.codingQaBody.input[0].content)?global.codingQaBody.input[0].content[0].text:global.codingQaBody.input[0].content).paroles),/Use a loop/);
   await openMenu();await page.locator('#coding-undo').click();assert.equal(await page.locator('#coding-solution').textContent(),'def sum_values(xs):\n    return sum(xs)');
   assert.match(await page.locator('#coding-receipt').textContent(),/Reçu/);
   const linked=await app.evaluate(()=>global.codingQaInterview.codingContext);
@@ -116,7 +121,7 @@ const os=require('node:os');
   await page.locator('#coding-reanalyze').click();await page.waitForFunction(()=>document.querySelector('#coding-status').textContent.includes('Réanalyse'));
   await app.evaluate(async()=>{for(let i=0;i<100&&!global.codingQaReviewRelease;i++)await new Promise(r=>setTimeout(r,10));});
   assert.equal(await page.locator('#coding-solution').textContent(),beforeReview);
-  assert.match(await app.evaluate(()=>JSON.parse(global.codingQaBody.input[0].content).echanges),/Micro.*Then return zero/s);assert.match(await app.evaluate(()=>JSON.parse(global.codingQaBody.input[0].content).echanges),/Ordinateur.*array may be empty/s);
+  assert.match(await app.evaluate(()=>JSON.parse(Array.isArray(global.codingQaBody.input[0].content)?global.codingQaBody.input[0].content[0].text:global.codingQaBody.input[0].content).echanges),/Micro.*Then return zero/s);assert.match(await app.evaluate(()=>JSON.parse(Array.isArray(global.codingQaBody.input[0].content)?global.codingQaBody.input[0].content[0].text:global.codingQaBody.input[0].content).echanges),/Ordinateur.*array may be empty/s);
   await app.evaluate(()=>global.codingQaReviewRelease());await page.waitForFunction(()=>document.querySelector('#coding-solution').textContent.includes('if xs else 0'));
   await app.evaluate(()=>{global.codingQaInterview.running=false;global.codingQaInterview.notify('stopped',{});});
   assert.equal(await page.locator('#coding-menu').isVisible(),false);

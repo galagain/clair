@@ -87,7 +87,7 @@ test('Browser bridge binds only loopback, requires capability and rejects web or
 });
 test('Bridge rejects oversized, malformed and non-JSON messages and has no data-reading route',async t=>{
  let calls=0;const {url,headers}=await bridge(t,()=>{calls++;});
- for(const [body,extra,status] of [['not json',{},400],['{}',{'Content-Type':'text/plain'},415],['x'.repeat(280001),{},413]]){
+ for(const [body,extra,status] of [['not json',{},400],['{}',{'Content-Type':'text/plain'},415],['x'.repeat(9000001),{},413]]){
   const response=await fetch(url+'/v1/coding',{method:'POST',headers:{...headers,...extra},body});assert.equal(response.status,status);
  }
  assert.equal((await fetch(url+'/v1/keys',{headers})).status,404);assert.equal(calls,0);

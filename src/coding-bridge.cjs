@@ -4,7 +4,7 @@ const {randomBytes,timingSafeEqual}=require('node:crypto');
 // Only activated by the user, only on loopback. The capability never enters a
 // page/content script. No credential, history or filesystem endpoint is exposed.
 class CodingBridge {
- constructor({receive,port=43127}){this.receive=receive;this.port=port;this.server=null;this.token=null;this.starting=null;}
+ constructor({receive,port=43127,settings=()=>({})}){this.receive=receive;this.settings=settings;this.port=port;this.server=null;this.token=null;this.starting=null;}
  async start(){
   if(this.starting)return this.starting;
   if(this.server)return this.code();
@@ -29,10 +29,10 @@ class CodingBridge {
   }
   const supplied=Buffer.from(String(req.headers.authorization||'')),expected=Buffer.from(`Bearer ${this.token}`);
   if(!this.token||supplied.length!==expected.length||!timingSafeEqual(supplied,expected)){reply(401,{error:'Reconnectez Firefox depuis l’onglet Coding de Clair.'});return;}
-  if(req.method==='GET'&&req.url==='/v1/status'){reply(200,{app:'clair',version:1});return;}
+  if(req.method==='GET'&&req.url==='/v1/status'){reply(200,{app:'clair',version:1,...this.settings()});return;}
   if(req.method!=='POST'||req.url!=='/v1/coding'){reply(404,{error:'Route inconnue.'});return;}
   if(!/^application\/json(?:;|$)/i.test(req.headers['content-type']||'')){reply(415,{error:'JSON requis.'});return;}
-  const limit=280000;if(Number(req.headers['content-length'])>limit){reply(413,{error:'Capture trop volumineuse.'});req.resume();return;}
+  const limit=9000000;if(Number(req.headers['content-length'])>limit){reply(413,{error:'Capture trop volumineuse.'});req.resume();return;}
   try{
    const chunks=[];let size=0;
    for await(const chunk of req){size+=chunk.length;if(size>limit){reply(413,{error:'Capture trop volumineuse.'});req.resume();return;}chunks.push(chunk);}

@@ -29,7 +29,7 @@ export function readPage({useSelection=true}={}){
   if(code?.trim())candidates.push({label:'Texte de l’éditeur (à vérifier)',code:code.slice(0,32000),complete:el.tagName==='TEXTAREA',truncated:code.length>32000});
  }
  const outputs=[...document.querySelectorAll('[data-testid*=output],[data-testid*=console],.xterm-screen,[role=log]')].filter(visible).slice(0,4).map(el=>textOf(el,8000).text).filter(Boolean);
- return {title:document.title.slice(0,240),source:location.hostname,statement:selection||page.text,selected:!!selection,truncated:selection?String(window.getSelection()).length>24000:page.truncated,candidates:candidates.slice(0,10),tests:outputs.join('\n\n').slice(0,8000),frames:document.querySelectorAll('iframe').length};
+ return {dimensions:{width:Math.max(innerWidth,document.documentElement.scrollWidth),height:Math.max(innerHeight,document.documentElement.scrollHeight)},title:document.title.slice(0,240),source:location.hostname,statement:selection||page.text,selected:!!selection,truncated:selection?String(window.getSelection()).length>24000:page.truncated,candidates:candidates.slice(0,10),tests:outputs.join('\n\n').slice(0,8000),frames:document.querySelectorAll('iframe').length};
 }
 
 export function readEditors(){
@@ -64,5 +64,5 @@ export function combineCapture(pages,models){
  if(usable.some(result=>result.result.truncated)||statement.length>24000)warning.push('Énoncé tronqué : complétez-le si nécessaire.');
  if(!candidates.length)warning.push('Code non récupéré : collez-le ci-dessous ou dans Clair.');
  if(candidates.length>1)warning.push('Plusieurs éditeurs : choisissez le bon code.');
- return {statement:statement.slice(0,24000),tests:[...new Set(usable.map(result=>result.result.tests).filter(Boolean))].join('\n\n').slice(0,8000),title:main.title,source:main.source,candidates,warning:warning.join(' ')};
+ return {dimensions:main.dimensions,statement:statement.slice(0,24000),tests:[...new Set(usable.map(result=>result.result.tests).filter(Boolean))].join('\n\n').slice(0,8000),title:main.title,source:main.source,candidates,warning:warning.join(' ')};
 }

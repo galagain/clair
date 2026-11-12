@@ -9,7 +9,7 @@ function selectCode(){const candidate=capture?.candidates[Number($('editor').val
 async function collect(){
  if(busy)return;lock(true);const epoch=++revision;status('Lecture de la page…');
  try{
-  const next=await captureTab(browser);
+  const settings=pairing?await request('status'):{};const next=await captureTab(browser,undefined,{captureMode:settings.captureMode});
   if(epoch!==revision)return;capture=next;
   $('statement').value=capture.statement;$('tests').value=capture.tests;$('source').textContent=capture.source;
   $('editor').replaceChildren();capture.candidates.forEach((candidate,i)=>{const option=document.createElement('option');option.value=String(i);option.textContent=candidate.label;$('editor').append(option);});
@@ -25,8 +25,8 @@ $('forget').onclick=async()=>{await browser.storage.local.remove('pairing');pair
 $('capture').onsubmit=async event=>{
  event.preventDefault();if(busy)return;lock(true);
  try{
-  if(!$('statement').value.trim()&&!$('code').value.trim())throw Error('Ajoutez un énoncé ou du code.');
-  const value={statement:$('statement').value,code:$('code').value,tests:$('tests').value,language:$('language').value,title:capture?.title||'',source:capture?.source||'',warning:$('warning').textContent.slice(0,1000)};
+  if(!$('statement').value.trim()&&!$('code').value.trim()&&!capture?.images?.length)throw Error('Ajoutez un énoncé ou du code.');
+  const value={...(capture?.images?.length?{images:capture.images}:{}),statement:$('statement').value,code:$('code').value,tests:$('tests').value,language:$('language').value,title:capture?.title||'',source:capture?.source||'',warning:$('warning').textContent.slice(0,1000)};
   await request('coding',value);status('Envoyé. La réponse apparaît dans Clair.');
  }catch(error){status(error.message);}finally{lock(false);}
 };
