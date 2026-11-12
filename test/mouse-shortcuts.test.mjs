@@ -19,3 +19,16 @@ test('Multiple Firefox mouse bindings migrate, append, persist and can be remove
  await f.mouse.forget('firefox',1);assert.deepEqual(f.saved.at(-1).bindings.firefox.map(b=>b.button),[3,5]);await assert.rejects(f.mouse.forget('firefox',9),/inconnue/);
  await f.mouse.forget('firefox');assert.deepEqual(f.mouse.config.bindings.firefox,[]);f.mouse.stop();
 });
+
+test('Add learns a keyboard chord alongside mouse bindings, persists it and ignores ordinary typing',async()=>{
+ const f=setup();await f.mouse.enable(true);f.event({type:'ready'});
+ f.mouse.learn('firefox');assert.equal(f.writes.at(-1).learningKeys,true);
+ f.event({type:'key',keyCode:12,modifiers:0,keyLabel:'Q',learning:true});assert.equal(f.mouse.learning,'firefox');
+ f.event({type:'key',keyCode:12,modifiers:8,keyLabel:'Q',learning:true});await f.mouse.queue;
+ assert.deepEqual(f.saved.at(-1).bindings.firefox,[{keyCode:12,modifiers:8,keyLabel:'Q'}]);
+ f.event({type:'key',keyCode:13,modifiers:8,keyLabel:'W',learning:false});assert.equal(f.mouse.config.bindings.firefox.length,1);
+ f.mouse.learn('firefox');f.event({type:'button',button:4,modifiers:0,learning:true});await f.mouse.queue;assert.equal(f.mouse.config.bindings.firefox.length,2);
+ f.mouse.learn('firefox');f.event({type:'key',keyCode:12,modifiers:8,keyLabel:'Different layout',learning:true});await f.mouse.queue;assert.equal(f.mouse.config.bindings.firefox.length,2);assert.match(f.events.at(-1).message,/différents/);
+ await f.mouse.forget('firefox',0);assert.deepEqual(f.mouse.config.bindings.firefox,[{button:4,modifiers:0}]);
+ f.mouse.learn('firefox');f.event({type:'learn-canceled'});assert.equal(f.mouse.learning,null);assert.equal(f.writes.at(-1).learningKeys,false);f.mouse.stop();
+});

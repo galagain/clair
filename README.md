@@ -22,7 +22,7 @@ Clair écoute le son de l’ordinateur et le micro. La traduction est facultativ
 
 **Sur iPhone** : mets les deux appareils sur le même réseau local (Mac en Ethernet possible), puis ouvre **Réglages → iPhone → Connecter** dans Clair et scanne le QR code. Les quatre icônes affichent ou masquent des cartes empilées. **⌘ ⇧ H** sur Mac ou **Ctrl ⇧ H** sur Windows masque/réaffiche Clair sans arrêter l’écoute. [Guide](docs/IPHONE.md).
 
-**Souris sur Mac** : dans **Réglages → Souris**, active la détection puis choisis un bouton pour l’arrière-plan et un autre pour envoyer depuis Firefox. [Configuration](docs/SOURIS.md).
+**Souris sur Mac** : dans **Réglages → Souris et clavier**, active la détection puis choisis un bouton pour l’arrière-plan et utilise **＋ Ajouter** pour associer des boutons ou combinaisons clavier à l’envoi depuis Firefox. [Configuration](docs/SOURIS.md).
 
 Les appels API sont facturés sur ton compte OpenAI. Les versions ne sont pas certifiées par Apple ou Microsoft : le système peut demander une autorisation d’ouverture. Clair peut apparaître si tu partages tout ton écran.
 
