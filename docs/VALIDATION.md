@@ -69,3 +69,5 @@ test('Visual shortcut can send an image-only page even when DOM extraction fails
 });
 
 Raccourcis séparés : dans un vrai Firefox isolé, Alt ⇧ V capture les images puis Alt ⇧ C renvoie du texte seul alors que le réglage de l’aperçu reste sur images. Les associations Texte et Texte + images coexistent, refusent les doublons entre types et se retirent indépendamment ; le choix dans ＋ Ajouter et le transport des modes explicites sont vérifiés dans l’application empaquetée avec API et frappes simulées.
+
+Touches de fonction : validation et affichage canonique F3–F20 sans modificateur, enregistrement clavier pour l’arrière-plan, association F8, action masquer/réafficher et rejet de F1/F2 réservées testés. Module Swift compilé et autotest réussi ; interface empaquetée vérifiée avec un événement F8 simulé. La frappe physique et les touches multimédias du clavier restent à valider sur le matériel de l’utilisateur.

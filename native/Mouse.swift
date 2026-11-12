@@ -5,10 +5,11 @@ import ApplicationServices
 
 func output(_ value: [String: Any]) { if let data = try? JSONSerialization.data(withJSONObject: value), var line = String(data: data, encoding: .utf8) { line += "\n"; FileHandle.standardOutput.write(Data(line.utf8)) } }
 func modifiers(_ flags: CGEventFlags) -> Int { (flags.contains(.maskShift) ? 1 : 0) | (flags.contains(.maskControl) ? 2 : 0) | (flags.contains(.maskAlternate) ? 4 : 0) | (flags.contains(.maskCommand) ? 8 : 0) }
+let functionKeys = [122:"F1",120:"F2",99:"F3",118:"F4",96:"F5",97:"F6",98:"F7",100:"F8",101:"F9",109:"F10",103:"F11",111:"F12",105:"F13",107:"F14",113:"F15",106:"F16",64:"F17",79:"F18",80:"F19",90:"F20"]
 func validBinding(_ raw: Any?) -> [String: Int]? {
  guard let value = raw as? [String: Any], let mods = value["modifiers"] as? Int, (0...15).contains(mods) else { return nil }
  if let key = value["keyCode"] as? Int {
-  guard value["button"] == nil, (0...127).contains(key), mods & 14 != 0 else { return nil }
+  guard value["button"] == nil, (0...127).contains(key), mods & 14 != 0 || functionKeys[key] != nil, !(mods == 0 && [122, 120].contains(key)) else { return nil }
   return ["keyCode": key, "modifiers": mods]
  }
  guard let button = value["button"] as? Int, (0...31).contains(button), button != 0 || mods != 0 else { return nil }
@@ -31,6 +32,8 @@ if CommandLine.arguments.contains("--self-test") {
  precondition(validBindings(["button": 3, "modifiers": 0]).count == 1)
  precondition(validBindings(nil).isEmpty)
  precondition(validBinding(["keyCode": 12, "modifiers": 0]) == nil)
+ precondition(validBinding(["keyCode": 100, "modifiers": 0]) != nil)
+ precondition(validBinding(["keyCode": 122, "modifiers": 0]) == nil)
  precondition(validBinding(["keyCode": 12, "modifiers": 1]) == nil)
  precondition(validBinding(["keyCode": 12, "modifiers": 8, "keyLabel": "Q"]) != nil)
  precondition(matches(["keyCode": 12, "modifiers": 8], key: 12, button: nil, mods: 8))
@@ -76,9 +79,9 @@ let callback: CGEventTapCallBack = { _, type, event, _ in
   if let key {
    guard learningKeys else { return Unmanaged.passUnretained(event) }
    if key == 53 { consumedKeys.insert(key); learning = false; output(["type": "learn-canceled"]); return nil }
-   guard mods & 14 != 0 else { return Unmanaged.passUnretained(event) }
+   guard mods & 14 != 0 || functionKeys[key] != nil else { return Unmanaged.passUnretained(event) }
    let names = [36: "↩", 48: "⇥", 49: "Espace", 51: "⌫", 53: "Échap", 123: "←", 124: "→", 125: "↓", 126: "↑"]
-   let label = names[key] ?? NSEvent(cgEvent: event)?.charactersIgnoringModifiers?.uppercased() ?? "Touche \(key)"
+   let label = functionKeys[key] ?? names[key] ?? NSEvent(cgEvent: event)?.charactersIgnoringModifiers?.uppercased() ?? "Touche \(key)"
    consumedKeys.insert(key); learning = false
    output(["type": "key", "keyCode": key, "modifiers": mods, "keyLabel": String(label.prefix(24)), "learning": true]); return nil
   }

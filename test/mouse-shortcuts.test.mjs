@@ -40,3 +40,12 @@ test('Text and visual shortcuts coexist, reject overlaps and remove independentl
  f.mouse.learn('firefoxVisual');assert.equal(f.writes.at(-1).learningKeys,true);f.event({type:'button',button:4,modifiers:0,learning:true});await f.mouse.queue;assert.equal(f.mouse.config.bindings.firefoxVisual.length,1);assert.match(f.events.at(-1).message,/différents/);
  await f.mouse.forget('firefoxVisual',0);assert.equal(f.mouse.config.bindings.firefox.length,1);assert.equal(f.mouse.config.bindings.firefoxVisual.length,0);f.mouse.stop();
 });
+
+test('Function keys work without modifiers for background and Firefox, preserving F1 and F2 modes',async()=>{
+ const f=setup();await f.mouse.enable(true);f.event({type:'ready'});f.mouse.learn('background');assert.equal(f.writes.at(-1).learningKeys,true);
+ f.event({type:'key',keyCode:100,modifiers:0,keyLabel:'unknown',learning:true});await f.mouse.queue;assert.deepEqual(f.mouse.config.bindings.background,{keyCode:100,modifiers:0,keyLabel:'F8'});
+ f.event({type:'action',action:'background'});assert.deepEqual(f.actions,['background']);
+ f.mouse.learn('firefox');f.event({type:'key',keyCode:101,modifiers:0,keyLabel:'',learning:true});await f.mouse.queue;assert.equal(f.mouse.config.bindings.firefox[0].keyLabel,'F9');
+ for(const keyCode of [122,120])assert.throws(()=>mouseConfiguration({bindings:{background:{keyCode,modifiers:0}}}),/réservées/);
+ assert.throws(()=>mouseConfiguration({bindings:{background:{keyCode:12,modifiers:0}}}),/touche F/);f.mouse.stop();
+});
