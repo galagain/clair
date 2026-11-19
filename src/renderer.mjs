@@ -34,12 +34,15 @@ function sections(){
  $('speech-card').hidden=!panels.speech;$('answer-card').hidden=!panels.answer;$('coding-panel').hidden=view!=='session'||!panels.coding;
  for(const [id,name] of [['speech-toggle','speech'],['answer-toggle','answer'],['coding-tab','coding']]){$(id).setAttribute('aria-pressed',String(panels[name]));$(id).classList.toggle('selected',panels[name]);}
 }
-function toggleSection(name){delete document.body.dataset.panelMode;api.preserveSize();panels[name]=!panels[name];try{localStorage.setItem('clair-panels',JSON.stringify(panels));}catch{}showView('session');}
+async function syncPanelFeatures(extra={}){
+ const saved=await api.preferences({auto:panels.answer,codingEnabled:panels.coding,...extra});config={...config,...saved};preferenceView();return saved;
+}
+function toggleSection(name){delete document.body.dataset.panelMode;api.preserveSize();panels[name]=!panels[name];try{localStorage.setItem('clair-panels',JSON.stringify(panels));}catch{}showView('session');void syncPanelFeatures().catch(e=>error(e.message));}
 function selectMode(mode){
  if(!['interview','coding'].includes(mode))return;
  api.preserveSize();panels={speech:mode==='interview',answer:mode==='interview',coding:mode==='coding'};
  document.body.dataset.panelMode=mode;try{localStorage.setItem('clair-panels',JSON.stringify(panels));}catch{}
- $('coding-menu').hidden=true;$('coding-menu-toggle').setAttribute('aria-expanded','false');showView('session');
+ $('coding-menu').hidden=true;$('coding-menu-toggle').setAttribute('aria-expanded','false');showView('session');void syncPanelFeatures({translationEnabled:false}).catch(e=>error(e.message));
 }
 function showView(next){view=next;for(const name of ['session','settings','files']){$(name+'-panel').hidden=name!==next;$(name+'-tab').classList.toggle('selected',name===next);if(name===next)$(name+'-tab').setAttribute('aria-current','page');else $(name+'-tab').removeAttribute('aria-current');}sections();document.body.classList.toggle('settings-open',next!=='session');closeMenu();window.scrollTo(0,0);}
 $('speech-toggle').onclick=()=>toggleSection('speech');$('answer-toggle').onclick=()=>toggleSection('answer');
@@ -57,7 +60,7 @@ async function start(localTest=false){
  if(starting||running)return;if(!localTest&&!hasKey){settings(true);$('key').focus();return;}
  clearTimeout(demoTimer);demoTimer=null;testing=false;answerId=null;audioStatus='Audio automatique · ordinateur + micro';diagnostic=localTest;diagnosticSources={system:false,mic:false};signalSeen=false;error('');starting=true;controls();const epoch=++listenEpoch;
  try{
-  await api.arm();if(epoch!==listenEpoch)return;status('Connexion au son de l’ordinateur et au micro…');
+  await syncPanelFeatures();if(epoch!==listenEpoch)return;await api.arm();if(epoch!==listenEpoch)return;status('Connexion au son de l’ordinateur et au micro…');
   const opened=await capture.open('auto',{
    onStatus:text=>{audioStatus=text;if(running)status(text);},
    onEnded:text=>{if(epoch===listenEpoch){void stop();error(text||'Le son a été interrompu. Relancez l’écoute.');}},
@@ -92,6 +95,7 @@ $('history-hold').onclick=()=>answerFeed.resume();
 api.onEvent(e=>{
  if(e.type==='view-shortcut')selectMode(e.mode);
  if(e.type==='preferences-changed'){config={...config,...e.config};preferenceView();}
+ if(e.type==='answers-paused'){answerId=null;history.cancel(false,false);renderHistory();}
  if(e.type==='answer-language-changed'){answerId=null;history.cancel(true,false);renderHistory();}
  if(e.type==='translation-reset'){translationId=null;translations.clear();ui('translation-status','');}
  if(e.type==='translation-start'&&config.translationEnabled&&e.language===config.translationLanguage){translationId=e.id;ui('translation-status','Traduction…');}
@@ -156,6 +160,7 @@ $('clear-files').onclick=async()=>{try{renderFiles(await api.clearFiles());ui('f
 installOverlay(api);
 await installCoding(api,{show:()=>{sections();},toggle:()=>toggleSection('coding')});
 sections();
+await syncPanelFeatures();
 
 const phoneIds=new WeakMap();let phoneSequence=0;
 function phoneParagraphs(id){const items=[...$(id).querySelectorAll('.feed-paragraph,.feed-live')].map(node=>{if(!phoneIds.has(node))phoneIds.set(node,String(++phoneSequence));return {id:phoneIds.get(node),text:node.textContent,source:node.dataset.source};});return items.length||id!=='transcript'||$('transcript-state').textContent!=='EXEMPLE'?items:[{id:'demo',text:$(id).textContent}];}

@@ -33,7 +33,7 @@ const os=require('node:os');
    CodingEngine.prototype.run=function(entry,args){
     this.fetch=async(_url,init)=>{
      const body=JSON.parse(init.body),input=JSON.parse(Array.isArray(body.input[0].content)?body.input[0].content[0].text:body.input[0].content),exercise=input.exercice;
-     if(body.instructions.startsWith('Explique pédagogiquement')){global.codingQaNotes=input;return new Response('data: '+JSON.stringify({type:'response.output_text.delta',delta:'[[REPONSE]] • **Approche** : parcourir les valeurs.\n• Retenir les valeurs déjà vues.\n• Complexité : O(n) en temps et en mémoire.'})+'\n\ndata: '+JSON.stringify({type:'response.completed'})+'\n\n');}
+     if(body.instructions.startsWith('Explique pédagogiquement')){global.codingQaNotesCount=(global.codingQaNotesCount||0)+1;global.codingQaNotes=input;return new Response('data: '+JSON.stringify({type:'response.output_text.delta',delta:'[[REPONSE]] • **Approche** : parcourir les valeurs.\n• Retenir les valeurs déjà vues.\n• Complexité : O(n) en temps et en mémoire.'})+'\n\ndata: '+JSON.stringify({type:'response.completed'})+'\n\n');}
      global.codingQaRequests=(global.codingQaRequests||0)+1;global.codingQaBody=body;
      if(input.echanges)await new Promise(resolve=>{global.codingQaReviewRelease=resolve;});
      if(input.paroles)await new Promise(resolve=>{global.codingQaVoiceRelease=resolve;});
@@ -128,6 +128,7 @@ const os=require('node:os');
   assert.equal(await page.locator('#coding-menu').isVisible(),false);
   await page.locator('#speech-toggle').click();await page.locator('#answer-toggle').click();
   await fs.mkdir('release/qa',{recursive:true});await page.screenshot({path:'release/qa/clair-coding.png',omitBackground:true});
+  if(await page.locator('#answer-toggle').getAttribute('aria-pressed')==='true')await page.locator('#answer-toggle').click();await page.waitForFunction(async()=>!(await window.clair.config()).auto);const notesBeforeHidden=await app.evaluate(()=>global.codingQaNotesCount||0);assert.equal((await send('Fixture',[image])).status,202);await page.waitForFunction(()=>document.querySelector('#coding-stop').hidden);assert.equal(await app.evaluate(()=>global.codingQaNotesCount||0),notesBeforeHidden);
   await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].setSize(340,520));
   await page.evaluate(()=>window.scrollTo(0,0));await page.locator('#opacity-toggle').click();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);

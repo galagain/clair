@@ -46,7 +46,6 @@ if !trusted { output(["type": "permission", "message": "Autorisez Clair dans Acc
 var enabled = false, learning = false, learningKeys = false
 var bindings: [String: [[String: Int]]] = [:]
 var consumed = Set<Int>(), consumedKeys = Set<Int>()
-let syntheticTag: Int64 = 0x434c414952
 var tap: CFMachPort?
 var lastAction: TimeInterval = 0
 func configure(_ raw: [String: Any]) {
@@ -54,16 +53,8 @@ func configure(_ raw: [String: Any]) {
  bindings.removeAll()
  if let values = raw["bindings"] as? [String: Any] { for action in ["background", "firefox", "firefoxVisual"] { bindings[action] = validBindings(values[action]) } }
 }
-func firefoxShortcut(_ action: String) -> Bool {
- guard let target = NSWorkspace.shared.frontmostApplication, firefoxIDs.contains(target.bundleIdentifier ?? "") else { return false }
- guard let down = CGEvent(keyboardEventSource: nil, virtualKey: action == "firefoxVisual" ? 9 : 8, keyDown: true), let up = CGEvent(keyboardEventSource: nil, virtualKey: action == "firefoxVisual" ? 9 : 8, keyDown: false) else { return false }
- down.flags = [.maskAlternate, .maskShift]; up.flags = [.maskAlternate, .maskShift]
- down.setIntegerValueField(.eventSourceUserData, value: syntheticTag); up.setIntegerValueField(.eventSourceUserData, value: syntheticTag)
- down.postToPid(target.processIdentifier); up.postToPid(target.processIdentifier); return true
-}
 let callback: CGEventTapCallBack = { _, type, event, _ in
  if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput { if let current = tap { CGEvent.tapEnable(tap: current, enable: true) }; return Unmanaged.passUnretained(event) }
- if event.getIntegerValueField(.eventSourceUserData) == syntheticTag { return Unmanaged.passUnretained(event) }
  let keyboard = type == .keyDown || type == .keyUp
  let key: Int? = keyboard ? Int(event.getIntegerValueField(.keyboardEventKeycode)) : nil
  let button: Int? = keyboard ? nil : Int(event.getIntegerValueField(.mouseEventButtonNumber))
@@ -96,8 +87,7 @@ let callback: CGEventTapCallBack = { _, type, event, _ in
   if let key { consumedKeys.insert(key) }; if let button { consumed.insert(button) }
   let now = ProcessInfo.processInfo.systemUptime
   if now - lastAction < 0.35 { return nil }; lastAction = now
-  if action != "background" { let sent = firefoxShortcut(action); output(["type": "action", "action": action, "sent": sent]) }
-  else { output(["type": "action", "action": action]) }
+  output(["type": "action", "action": action])
   return nil
  }
  return Unmanaged.passUnretained(event)

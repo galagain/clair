@@ -17,9 +17,10 @@ export class InterviewEngine {
  configure(c){this.config=normalizeConfig(c);this.stats();}
  preferences(c){
   const old=this.config;this.configure(c);
+  if(old.auto&&!this.config.auto){this.cancelAnalysis();this.pending=[];for(const timer of this.draftTimers.values())clearTimeout(timer);this.draftTimers.clear();this.drafted.clear();this.notify('answers-paused');}
   if(old.transcriptionLanguage!==this.config.transcriptionLanguage&&this.running&&this.socket?.readyState===1){if(this.vad.speech>=200){this.commitAudio();this.vad.reset();}this.updateTranscription();}
   if(old.translationEnabled!==this.config.translationEnabled||old.translationLanguage!==this.config.translationLanguage){this.translation.cancel();this.notify('translation-reset');const turn=this.ledger.ordered().filter(t=>t.done).at(-1);if(turn)this.translation.enqueue(turn,this.config,this.key);}
-  if(old.answerLanguage!==this.config.answerLanguage){this.cancelAnalysis();this.pending=[];for(const timer of this.draftTimers.values())clearTimeout(timer);this.draftTimers.clear();this.drafted.clear();this.recentAnswers=[];this.notify('answer-language-changed');if(this.key&&this.lastAnswerSource)void this.analyze(this.lastAnswerSource,{manual:true});}
+  if(old.answerLanguage!==this.config.answerLanguage){this.cancelAnalysis();this.pending=[];for(const timer of this.draftTimers.values())clearTimeout(timer);this.draftTimers.clear();this.drafted.clear();this.recentAnswers=[];this.notify('answer-language-changed');if(this.config.auto&&this.key&&this.lastAnswerSource)void this.analyze(this.lastAnswerSource,{manual:true});}
  }
  turnKey(id){return this.listenSequence+':'+id;}
  updateTranscription(){const transcription={model:'gpt-live-transcribe',delay:'low',languages:[this.config.transcriptionLanguage],prompt:'A professional job interview.'};this.socket.send(JSON.stringify({type:'session.update',session:{type:'transcription',audio:{input:{format:{type:'audio/pcm',rate:24000},transcription,turn_detection:null}}}}));}
@@ -61,7 +62,7 @@ export class InterviewEngine {
  commitAudio(){this.committedSources.push(this.sources.speaker());this.sources.reset();this.socket.send(JSON.stringify({type:'input_audio_buffer.commit'}));}
  event(e){
  if(e.type==='input_audio_buffer.committed'&&e.item_id){const turn=this.ledger.commit(e.item_id,e.previous_item_id);turn.speaker=this.committedSources.shift()??null;this.notify('transcript-speaker',{id:this.turnKey(turn.id),speaker:turn.speaker});this.notify('transcript-order',{ids:this.ledger.ordered().map(t=>this.turnKey(t.id))});return;}
- if(e.type==='conversation.item.input_audio_transcription.delta'&&e.item_id){if(this.ledger.items.get(e.item_id)?.done)return;const t=this.ledger.delta(e.item_id,e.delta||'');this.notify('transcript',{id:this.turnKey(t.id),text:t.text,final:false,speaker:t.speaker??null});if(this.config.auto&&this.config.anticipate&&!this.drafted.has(t.id)&&possibleQuestion(t.text)&&!this.draftTimers.has(t.id)){const gen=this.generation;this.draftTimers.set(t.id,setTimeout(()=>{this.draftTimers.delete(t.id);if(gen!==this.generation||t.done||!this.running||this.active||this.pending.length)return;this.drafted.add(t.id);this.analyze(t.text,{draft:true,itemId:t.id});},300));}return;}
+ if(e.type==='conversation.item.input_audio_transcription.delta'&&e.item_id){if(this.ledger.items.get(e.item_id)?.done)return;const t=this.ledger.delta(e.item_id,e.delta||'');this.notify('transcript',{id:this.turnKey(t.id),text:t.text,final:false,speaker:t.speaker??null});if(this.config.auto&&this.config.anticipate&&!this.drafted.has(t.id)&&possibleQuestion(t.text)&&!this.draftTimers.has(t.id)){const gen=this.generation;this.draftTimers.set(t.id,setTimeout(()=>{this.draftTimers.delete(t.id);if(gen!==this.generation||t.done||!this.running||!this.config.auto||this.active||this.pending.length)return;this.drafted.add(t.id);this.analyze(t.text,{draft:true,itemId:t.id});},300));}return;}
  if(e.type==='conversation.item.input_audio_transcription.completed'&&e.item_id){const old=this.ledger.items.get(e.item_id);if(old?.done)return;this.tokens.record(e.usage);const t=this.ledger.complete(e.item_id,String(e.transcript||''));clearTimeout(this.draftTimers.get(t.id));this.draftTimers.delete(t.id);this.notify('transcript',{id:this.turnKey(t.id),text:t.text,final:true,speaker:t.speaker??null});this.translation.enqueue(t,this.config,this.key);
  if(t.text.trim()&&this.config.auto){this.pending.push(t);if(this.active?.draft)this.cancelAnalysis();this.drain();}}
  }
@@ -69,6 +70,7 @@ export class InterviewEngine {
  cancelAnalysis(){if(this.active)this.rememberAnswer(this.active);this.active?.controller.abort();this.active=null;}
  drain(){if(this.active||!this.pending.length)return;const batch=this.pending.splice(0).sort((a,b)=>this.ledger.ordered().indexOf(a)-this.ledger.ordered().indexOf(b));this.analyze(batch.map(t=>t.text).join('\n'),{itemId:batch.at(-1).id});}
  async analyze(text,{draft=false,manual=false,itemId='manual'}={}){
+ if(!this.config.auto&&!manual)return;
  if(!this.key){this.notify('error',{text:'Saisissez votre clé API.'});return;}
  if(this.active){if(manual)this.cancelAnalysis();else return;}
  if(!this.request())return;this.lastAnswerSource=text;const id=++this.requestSeq,gen=this.generation,controller=new AbortController();const entry={id,draft,controller,question:text,output:''};this.active=entry;const usage=this.tokens.begin();const model=this.config.model;const started=Date.now();let first=null,output='',complete=false;const timeout=setTimeout(()=>controller.abort(),45000);

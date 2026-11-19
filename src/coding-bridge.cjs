@@ -1,10 +1,11 @@
 const http=require('node:http');
+const {CodingRemote}=require('./coding-remote.cjs');
 const {randomBytes,timingSafeEqual}=require('node:crypto');
 
 // Only activated by the user, only on loopback. The capability never enters a
 // page/content script. No credential, history or filesystem endpoint is exposed.
 class CodingBridge {
- constructor({receive,port=43127,settings=()=>({})}){this.receive=receive;this.settings=settings;this.port=port;this.server=null;this.token=null;this.starting=null;}
+ constructor({receive,port=43127,settings=()=>({}),notify=()=>{}}){this.receive=receive;this.settings=settings;this.port=port;this.server=null;this.token=null;this.starting=null;this.remote=new CodingRemote({token:()=>this.token,notify});}
  async start(){
   if(this.starting)return this.starting;
   if(this.server)return this.code();
@@ -16,7 +17,7 @@ class CodingBridge {
   server.requestTimeout=10000;server.headersTimeout=10000;server.timeout=10000;server.maxHeadersCount=30;
   try{await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(this.port,'127.0.0.1',resolve);});}
   catch{server.close();throw Error('Connexion Firefox indisponible : le port local est occupé.');}
-  this.server=server;this.token=randomBytes(32).toString('hex');return this.code();
+  this.server=server;this.token=randomBytes(32).toString('hex');this.remote.attach(server);return this.code();
  }
  code(){return `clair:${this.server.address().port}:${this.token}`;}
  async handle(req,res){
@@ -37,9 +38,10 @@ class CodingBridge {
    const chunks=[];let size=0;
    for await(const chunk of req){size+=chunk.length;if(size>limit){reply(413,{error:'Capture trop volumineuse.'});req.resume();return;}chunks.push(chunk);}
    let value;try{value=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{reply(400,{error:'Capture invalide.'});return;}
-   const accepted=await this.receive(value);reply(202,{ok:true,...accepted});
+   this.remote.accept(value.nativeRequestId);const accepted=await this.receive(value);reply(202,{ok:true,...accepted});
   }catch(error){reply(400,{error:String(error.message||'Envoi impossible.').slice(0,260).replace(/sk-[\w-]+/g,'[masqué]')});}
  }
- async close(){if(this.starting)await this.starting.catch(()=>{});const server=this.server;this.server=null;this.token=null;if(server){server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}}
+ trigger(mode){return this.remote.trigger(mode);}
+ async close(){if(this.starting)await this.starting.catch(()=>{});const server=this.server;this.server=null;this.token=null;await this.remote.close();if(server){server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}}
 }
 module.exports={CodingBridge};

@@ -7,7 +7,7 @@
 
 Clair affiche le dernier bouton détecté. Les clics gauche/droit, le clic de molette et les boutons supplémentaires signalés par macOS sont reconnus, jusqu’au bouton 32. Tu peux ajouter une touche ⌥, ⌃, ⇧ ou ⌘ en la maintenant pendant le choix. Pour le clic gauche, une touche est obligatoire afin de conserver les clics ordinaires utilisables.
 
-**Arrière-plan** masque ou réaffiche la fenêtre de Clair sans arrêter l’écoute. **Envoyer Firefox** déclenche **Alt ⇧ C** pour Texte ou **Alt ⇧ V** pour Texte + images quand Firefox est au premier plan, ce qui utilise le même envoi que le raccourci clavier de l’extension. Il ne change pas d’application et n’écrit pas de code dans l’éditeur. Conserve Alt ⇧ C sur la commande Texte et Alt ⇧ V sur la commande Texte + images dans les raccourcis Firefox.
+**Arrière-plan** masque ou réaffiche la fenêtre de Clair sans arrêter l’écoute. **Envoyer Firefox** demande directement une capture Texte ou Texte + images à l’extension connectée, lorsque Firefox est au premier plan. Aucun raccourci ni caractère n’est injecté dans l’éditeur. Ouvre une fois l’extension sur l’onglet de l’exercice pendant la préparation pour lui accorder cet accès ; après une navigation qui le révoque, ouvre-la de nouveau. Si l’extension n’est pas prête, Clair affiche un message au lieu de taper dans la page.
 
 Un bouton associé est consommé pour cette action : il ne déclenche pas simultanément Retour, un menu ou le clic habituel. Le bouton Firefox garde son usage habituel dans les autres applications. Le bouton **×** près d’Ajouter retire les associations du type sélectionné ; celui de chaque ligne retire seulement ce bouton ; **Désactiver** arrête le module. Les réglages sont conservés localement. Après une mise en veille, réactive la détection si nécessaire.
 
@@ -21,4 +21,4 @@ La détection globale est implémentée pour **Mac uniquement**. Le module est c
 
 Références : [événements souris macOS](https://developer.apple.com/documentation/coregraphics/cgevent), [commandes et autorisation activeTab dans Firefox](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/User_actions).
 
-Pour ajouter des raccourcis clavier, ouvre Firefox → `about:addons` → ⚙ → **Gérer les raccourcis des extensions**. Clair propose deux commandes Texte et deux commandes Texte + images : conserve **Alt ⇧ C** et **Alt ⇧ V** sur les deux premières pour les associations créées dans Clair ; les deux autres peuvent recevoir des touches supplémentaires.
+Pour ajouter des raccourcis clavier, ouvre Firefox → `about:addons` → ⚙ → **Gérer les raccourcis des extensions**. Clair propose deux commandes Texte et deux commandes Texte + images : les raccourcis physiques Firefox restent configurables indépendamment des associations créées dans Clair.

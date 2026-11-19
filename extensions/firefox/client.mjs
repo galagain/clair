@@ -35,18 +35,19 @@ async function boundedCapture(api,tab,timeoutMs,captureMode){
 }
 export function directSender(api,fetchImpl=fetch,{captureTimeoutMs=10000}={}){
  let sending=false;
- return async (tab,{captureMode}={})=>{
+ return async (tab,{captureMode,nativeRequestId}={})=>{
   if(sending)return {status:'busy'};
-  sending=true;
+  sending=true;let stage='connection';
   try{
    const pairing=await storedConnection(api);if(!pairing)throw Error('Connectez d’abord Clair depuis l’icône de l’extension.');
    const language=(await api.storage.local.get('codingLanguage')).codingLanguage;
    const settings=await requestClair(pairing,'status',undefined,fetchImpl);
-   const capture=await boundedCapture(api,tab,captureTimeoutMs,captureMode==='text'||captureMode==='visual'?captureMode:settings.captureMode==='visual'?'visual':'text'),snapshot=directSnapshot(capture,language);
+   stage='capture';const capture=await boundedCapture(api,tab,captureTimeoutMs,captureMode==='text'||captureMode==='visual'?captureMode:settings.captureMode==='visual'?'visual':'text'),snapshot=directSnapshot(capture,language);
    if(!snapshot.statement.trim()&&!snapshot.code.trim()&&!snapshot.images?.length)throw Error('Aucun énoncé ou code accessible sur cette page.');
+   stage='send';if(nativeRequestId)snapshot.nativeRequestId=nativeRequestId;
    await requestClair(pairing,'coding',snapshot,fetchImpl);
    return {status:'sent',text:'Dernier raccourci : envoyé à Clair.'};
-  }catch(error){return {status:'error',text:String(error.message||'Envoi impossible.').replace(/Bearer\s+\S+/gi,'[masqué]').replace(/sk-[\w-]+/g,'[masqué]').slice(0,260)};}
+  }catch(error){return {status:'error',text:((nativeRequestId&&stage==='capture'?'Capture impossible. Ouvrez une fois l’extension Clair sur cet onglet, puis réessayez. ':'')+String(error.message||'Envoi impossible.')).replace(/Bearer\s+\S+/gi,'[masqué]').replace(/sk-[\w-]+/g,'[masqué]').slice(0,260)};}
   finally{sending=false;}
  };
 }

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Clair Coding",
-  "version": "0.28.2",
+  "version": "0.29.0",
   "description": "Envoyez un énoncé et du code à Clair, uniquement à votre demande.",
   "browser_specific_settings": {
     "gecko": {
@@ -20,7 +20,8 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "alarms"
   ],
   "host_permissions": [
     "http://127.0.0.1/*"
@@ -55,7 +56,7 @@
     }
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; connect-src http://127.0.0.1:*"
+    "extension_pages": "script-src 'self'; object-src 'none'; connect-src http://127.0.0.1:* ws://127.0.0.1:*"
   },
   "background": {
     "scripts": [

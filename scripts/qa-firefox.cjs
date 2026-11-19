@@ -87,10 +87,14 @@ async function until(fn){let last;for(let i=0;i<80;i++){try{last=await fn();if(l
   const {loadImage,createCanvas}=require('@napi-rs/canvas');const tile=await loadImage(Buffer.from(captures[4].images.at(-1).url.split(',')[1],'base64'));assert.equal(tile.width,captures[4].images.at(-1).width);assert.equal(tile.height,captures[4].images.at(-1).height);
   const canvas=createCanvas(tile.width,tile.height),ctx=canvas.getContext('2d');ctx.drawImage(tile,0,0);const pixels=ctx.getImageData(0,0,tile.width,tile.height).data;let found=false;for(let i=0;i<pixels.length;i+=4)if(pixels[i]>200&&pixels[i+1]<70&&pixels[i+2]>70&&pixels[i+2]<150){found=true;break;}assert.equal(found,true,'Offscreen image must appear in a captured tile');
   await shortcut('text');await until(()=>captures.length===6);assert.equal(captures[5].images,undefined);assert.equal(captures[5].captureMode,'text');
+  await until(()=>bridge.remote.socket?.readyState===1);
+  const beforeRemote=await command('/execute/sync',{script:"return document.querySelector('.view-line').textContent;",args:[]});
+  const nativeText=bridge.trigger('text');await until(()=>captures.length===7);assert.equal(captures[6].nativeRequestId,nativeText.id);assert.equal(captures[6].images,undefined);
+  bridge.trigger('visual');await until(()=>captures.length===8);assert.ok(captures[7].images.length>=2);assert.equal(await command('/execute/sync',{script:"return document.querySelector('.view-line').textContent;",args:[]}),beforeRemote);
   await bridge.close();await shortcut();await pause(300);
   await command('/moz/context',{context:'chrome'});
   assert.equal(await chrome("return document.querySelector('browser[webextension-view-type=popup]')?.closest('panel')?.state==='open';"),false);
-  await until(()=>chrome("return document.querySelector('#coding_clair_galagain-BAP .toolbarbutton-badge')?.textContent==='!';"));assert.equal(captures.length,6);
+  await until(()=>chrome("return document.querySelector('#coding_clair_galagain-BAP .toolbarbutton-badge')?.textContent==='!';"));assert.equal(captures.length,8);
   console.log('Firefox QA passed: real temporary add-on, activeTab, selection, full model, partial-code warning, pairing, direct keyboard send without popup, unchanged editor and disconnected shortcut. No OpenAI requests.');
  }catch(error){try{await command('/moz/context',{context:'chrome'});console.error('Shortcut diagnostic:',await chrome("return {key:document.querySelector('#ext-keyset-id-coding_clair_galagain key')?.outerHTML,title:document.getElementById('coding_clair_galagain-BAP')?.getAttribute('tooltiptext'),badge:document.querySelector('#coding_clair_galagain-BAP .toolbarbutton-badge')?.textContent};"));}catch{}console.error(driverLog);throw error;}
  finally{if(session)await fetch(base+'/session/'+session.sessionId,{method:'DELETE'}).catch(()=>{});driver?.kill();await bridge.close();fixture.closeAllConnections();await new Promise(resolve=>fixture.close(resolve));}

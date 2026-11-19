@@ -94,3 +94,25 @@ test('Replacing the exercise cancels an old oral answer and ignores its delayed 
  const pending=e.manual('Explain the old exercise');e.setCodingContext({statement:'New exercise'});release(success());await pending;
  assert.equal(events.filter(x=>x.type==='answer-delta').length,0);assert.equal(e.history.length,0);assert.equal(e.active,null);
 });
+
+test('Transcription-only never launches automatic or anticipated response requests',async t=>{
+ const bodies=[];const {e}=make(async(_url,options)=>{bodies.push(JSON.parse(options.body));return success();});e.configure({auto:false,translationEnabled:false});await e.start();
+ t.mock.timers.enable({apis:['setTimeout']});
+ for(let i=0;i<20;i++){e.event({type:'conversation.item.input_audio_transcription.delta',item_id:String(i),delta:'Can you explain why this method is slow?'});e.event({type:'conversation.item.input_audio_transcription.completed',item_id:String(i),transcript:'Can you explain why this method is slow?'});}
+ t.mock.timers.tick(1000);assert.equal(bodies.length,0);assert.equal(e.calls,0);assert.equal(e.pending.length,0);assert.equal(e.draftTimers.size,0);assert.equal(e.ledger.ordered().length,20);assert.equal(e.running,true);e.stop();
+});
+test('Translation-only sends each finalized turn once, without history or response analysis',async()=>{
+ const bodies=[];const {e}=make(async(_url,options)=>{bodies.push(JSON.parse(options.body));return success();});e.configure({auto:false,translationEnabled:true});e.setDocuments([{name:'CV.pdf',text:'PRIVATE_DOCUMENT'}]);await e.start();
+ const texts=['Hello there.','The meeting starts now.','Thank you.'];for(const [index,text] of texts.entries())e.event({type:'conversation.item.input_audio_transcription.completed',item_id:String(index),transcript:text});
+ for(let i=0;i<30&&(e.translation.active||e.translation.queue.length);i++)await new Promise(resolve=>setTimeout(resolve,5));
+ assert.equal(bodies.length,3);assert.deepEqual(bodies.map(body=>body.input[0].content),texts);assert.ok(bodies.every(body=>body.instructions.startsWith('Traduis')&&body.prompt_cache_options.mode==='explicit'));assert.ok(!JSON.stringify(bodies).includes('PRIVATE_DOCUMENT'));assert.equal(e.running,true);e.stop();
+});
+test('Disabling Pistes aborts its active request and drops queued and future analysis, preserving listening',async()=>{
+ let release,signal;const {e,events}=make(async(_url,options)=>{signal=options.signal;await new Promise(resolve=>release=resolve);return success();});await e.start();const socket=e.socket;
+ e.event({type:'conversation.item.input_audio_transcription.completed',item_id:'first',transcript:'First question?'});e.event({type:'conversation.item.input_audio_transcription.completed',item_id:'second',transcript:'Second question?'});assert.equal(e.pending.length,1);
+ e.preferences({...e.config,auto:false});assert.equal(signal.aborted,true);assert.equal(e.pending.length,0);assert.equal(e.active,null);assert.equal(e.socket,socket);assert.equal(e.running,true);
+ e.event({type:'conversation.item.input_audio_transcription.completed',item_id:'third',transcript:'Third question?'});release();await new Promise(resolve=>setTimeout(resolve,10));assert.equal(e.calls,1);assert.equal(events.filter(event=>event.type==='answer-delta').length,0);assert.ok(events.some(event=>event.type==='answers-paused'));e.stop();
+});
+test('Changing answer language with Pistes off never regenerates a paid answer',async()=>{
+ const {e}=make();await e.manual('A question');const calls=e.calls;e.preferences({...e.config,auto:false});e.preferences({...e.config,answerLanguage:'fr'});await new Promise(resolve=>setTimeout(resolve,5));assert.equal(e.calls,calls);
+});

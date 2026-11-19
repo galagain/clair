@@ -14,7 +14,7 @@ Une petite fenêtre pour transcrire une visio, traduire les échanges et propose
 2. Glisse tes PDF dans **Fichiers**, si nécessaire.
 3. Choisis la langue du discours et des réponses, puis clique sur **▶**.
 
-Les quatre icônes du haut affichent ou masquent Discours, Pistes, Traduction et Code, sur Mac comme sur iPhone. Sur ordinateur, **F1** affiche Discours + Pistes et **F2** affiche Code. Sur Mac, utilise **Fn + F1/F2** si les touches règlent la luminosité.
+Les quatre icônes du haut contrôlent les cartes Discours, Pistes, Traduction et Code. Sur le Mac, désactiver **Pistes** arrête aussi ses analyses automatiques et ses demandes en attente. Pour transcrire uniquement, laisse **Pistes** et **Traduction** désactivées. Sur iPhone, les icônes restent des commandes d’affichage. Sur ordinateur, **F1** affiche Discours + Pistes et **F2** affiche Code. Sur Mac, utilise **Fn + F1/F2** si les touches règlent la luminosité.
 
 Clair écoute le son de l’ordinateur et le micro. La traduction est facultative. Les nouvelles pistes s’ajoutent sous les anciennes ; remonte pour relire et clique sur **↓** pour revenir au direct.
 
@@ -24,7 +24,7 @@ Clair écoute le son de l’ordinateur et le micro. La traduction est facultativ
 
 **Souris sur Mac** : dans **Réglages → Souris et clavier**, active la détection puis choisis un bouton pour l’arrière-plan et utilise **＋ Ajouter** pour associer des boutons ou combinaisons clavier à l’envoi depuis Firefox. [Configuration](docs/SOURIS.md).
 
-Les appels API sont facturés sur ton compte OpenAI. Les versions ne sont pas certifiées par Apple ou Microsoft : le système peut demander une autorisation d’ouverture. Clair peut apparaître si tu partages tout ton écran.
+Les appels API sont facturés sur ton compte OpenAI. La traduction envoie seulement la prise de parole à traduire ; les appels de texte et de code désactivent le cache de prompts. Les entrées, sorties et la transcription restent facturées normalement. Les versions ne sont pas certifiées par Apple ou Microsoft : le système peut demander une autorisation d’ouverture. Clair peut apparaître si tu partages tout ton écran.
 
 [Développement](docs/DEVELOPMENT.md) · [Tests et limites](docs/VALIDATION.md) · [Toutes les versions](https://github.com/galagain/clair/releases)
 

@@ -25,6 +25,7 @@ export async function installCoding(api,{show,toggle}){
  function reset(){revision++;current=null;snapshot=null;$('coding-images-count').textContent='';busy=false;adaptId=null;canUndo=false;for(const field of ['statement','code','tests'])$('coding-'+field).value='';$('coding-source').textContent='';$('coding-warning').textContent='';$('coding-input').open=true;message('');$('coding-receipt').textContent='';render();feed.scrollTop=0;}
  api.onEvent(event=>{
   if(event.type==='preferences-changed'){$('coding-auto-voice').checked=event.config.codingAutoVoice;$('coding-capture-mode').value=event.config.codingCaptureMode;}
+  if(event.type==='coding-capture-error'){message(event.error);return;}
   if(!event.type.startsWith('coding-'))return;changed=true;
   if(event.type==='coding-adapting'){adaptId=event.id;busy=true;message(event.manual?'Réanalyse des échanges…':'Adaptation à votre voix…');controls();return;}
   if(event.type==='coding-updated'){revision++;current={...event.item};canUndo=!!event.canUndo;adaptId=null;busy=false;message('');render();return;}
