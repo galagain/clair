@@ -5,6 +5,8 @@
 3. Choisis **Écran à recopier** et **Afficher la copie sur**, sélectionne la **Qualité**, puis **Démarrer**.
 4. Au premier essai, macOS peut demander l’accès à **Enregistrement de l’écran** pour Clair ou Clair Recopie. Le bouton **Autorisations** ouvre le réglage. Autorise l’application, puis réessaie ; redémarre Clair si macOS le demande.
 
+Le bouton aux deux écrans, à côté de Fichiers en haut, lance directement la recopie avec les derniers écrans et la qualité choisis. Reclique pour l’arrêter. Si deux écrans ne sont pas disponibles, il ouvre les réglages de recopie.
+
 Une fenêtre sans bordure remplit l’écran de destination avec une copie de l’écran source. Clair et ses fenêtres sont exclus par le filtre ScreenCaptureKit. Les éventuelles bandes noires conservent les proportions. La copie reste une vue en lecture seule : continue de cliquer et d’écrire sur l’écran d’origine.
 
 **Clique sur Arrêter dans Réglages → Recopie d’écran pour arrêter.** Un clic sur la copie puis **Échap** ferme la recopie. Masquer la fenêtre principale de Clair ne l’arrête pas. La fermeture ou le rechargement de Clair, la veille, le verrouillage et un changement de disposition des écrans arrêtent la recopie. Aucun démarrage automatique.

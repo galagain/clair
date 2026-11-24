@@ -57,7 +57,7 @@ const os=require('node:os');
   assert.equal(await page.locator('#coding-panel button:not(#coding-reanalyze),#coding-panel select,#coding-panel textarea,#coding-panel details').count(),0);
   await openMenu();assert.equal(await page.locator('#coding-menu').isVisible(),true);
   assert.deepEqual(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].getBounds()),bounds);
-  assert.equal(await page.locator('#more-toggle,#coding-menu-toggle,#mirror-toggle').count(),0);assert.equal(await page.locator('#settings-panel #coding-menu').count(),1);
+  assert.equal(await page.locator('#more-toggle,#coding-menu-toggle').count(),0);assert.equal(await page.locator('#settings-panel #coding-menu').count(),1);
   for(const id of ['coding-language','coding-next','coding-copy','coding-clear'])assert.equal(await page.locator('.coding-toolbar #'+id).count(),1);
   await page.locator('#settings-tab').click();assert.equal(await page.locator('#coding-menu').isVisible(),false);await openMenu();
   await page.keyboard.press('Escape');assert.equal(await page.locator('#coding-menu').isVisible(),false);

@@ -30,4 +30,4 @@ Les appels API sont facturés sur ton compte OpenAI. La traduction envoie seulem
 
 [Développement](docs/DEVELOPMENT.md) · [Tests et limites](docs/VALIDATION.md) · [Toutes les versions](https://github.com/galagain/clair/releases)
 
-**Recopie sans Clair (Mac)** : **Réglages → Recopie d’écran** reproduit un écran sur un autre en excluant Clair. [Utilisation](docs/RECOPIE.md).
+**Recopie sans Clair (Mac)** : le bouton aux deux écrans, à côté du dossier, lance ou arrête la recopie. Sa configuration reste dans **Réglages → Recopie d’écran**. [Utilisation](docs/RECOPIE.md).

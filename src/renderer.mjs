@@ -170,4 +170,4 @@ await installPhone(api,{snapshot:()=>({
 })});
 
 await installMouse(api);
-await installMirror(api);
+await installMirror(api,{openSettings:()=>settings(true)});

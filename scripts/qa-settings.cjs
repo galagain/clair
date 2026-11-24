@@ -6,7 +6,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=r
  try{
   const page=await app.firstWindow(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.waitForFunction(()=>!!document.querySelector('#mirror-start').onclick);
   assert.equal((await page.evaluate(()=>window.clair.config())).hasKey,false);
-  assert.equal(await page.locator('#more-toggle,#coding-menu-toggle,#mirror-toggle').count(),0);
+  assert.equal(await page.locator('#more-toggle,#coding-menu-toggle').count(),0);
   assert.equal(await page.locator('.titlebar #settings-tab').count(),1);
   const size=()=>app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].getSize());
   for(const width of [400,340]){
