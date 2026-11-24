@@ -22,3 +22,5 @@ La détection globale est implémentée pour **Mac uniquement**. Le module est c
 Références : [événements souris macOS](https://developer.apple.com/documentation/coregraphics/cgevent), [commandes et autorisation activeTab dans Firefox](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/User_actions).
 
 Pour ajouter des raccourcis clavier, ouvre Firefox → `about:addons` → ⚙ → **Gérer les raccourcis des extensions**. Clair propose deux commandes Texte et deux commandes Texte + images : les raccourcis physiques Firefox restent configurables indépendamment des associations créées dans Clair.
+
+Molette et poignée de taille : toute la surface des zones de texte défilantes est incluse dans le routage natif de la souris, avec conservation des espaces vides traversables. Le test Electron vérifie les régions, la molette haut/bas sur Discours, Traduction, Pistes et Code, la poignée ronde de 24 px, le glissement via IPC, la taille minimale, la fin du glissement et la conservation des dimensions lors du changement d’onglet. Le déplacement du curseur pour redimensionner est simulé dans un profil isolé ; aucune entrée système ni clé réelle n’est utilisée.

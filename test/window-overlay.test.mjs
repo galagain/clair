@@ -25,3 +25,12 @@ test('Content fits without resizing on tab switches or overriding a manually siz
 test('Malformed regions are rejected and reset restores native interaction',()=>{
  const {overlay,calls,layout}=setup();try{overlay.update(layout);assert.equal(validLayout({...layout,regions:[{x:NaN,y:0,width:2,height:2}]}),false);assert.equal(overlay.update({...layout,view:'unknown'}),false);overlay.reset();assert.equal(calls.at(-1).ignore,false);}finally{overlay.dispose();}
 });
+
+test('Visible resize handle drags the window, respects minimums and releases on blur',()=>{
+ const {overlay,win,cursor,layout}=setup();try{
+  overlay.update(layout);win.setSize(400,300);cursor.x=485;cursor.y=385;overlay.beginResize();cursor.x+=80;cursor.y+=60;overlay.refresh();assert.deepEqual(win.getSize(),[480,360]);
+  overlay.endResize();cursor.x+=50;overlay.refresh();assert.deepEqual(win.getSize(),[480,360]);
+  overlay.beginResize();cursor.x-=1000;cursor.y-=1000;overlay.refresh();assert.deepEqual(win.getSize(),[340,180]);win.emit('blur');assert.equal(overlay.resizing,null);
+  overlay.update({...layout,view:'settings',height:800});assert.deepEqual(win.getSize(),[340,180]);
+ }finally{overlay.dispose();}
+});

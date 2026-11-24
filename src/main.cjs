@@ -110,6 +110,8 @@ async function setup(){
  guard('window:opacity',async(value,save=false)=>{if(!Number.isFinite(value))throw Error('Opacité invalide.');config.opacity=Math.max(.35,Math.min(1,value));win.setOpacity(config.opacity);if(save===true)await atomic(storageFile(),config);return config.opacity;});
  guard('window:compact',compact=>{overlay.preset(compact);return true;});
  ipcMain.on('window:preserve-size',e=>{if(trusted(e))overlay.manualSize=true;});
+ ipcMain.on('window:resize-start',e=>{if(trusted(e))overlay.beginResize();});
+ ipcMain.on('window:resize-end',e=>{if(trusted(e))overlay.endResize();});
  ipcMain.on('window:layout',(e,value)=>{if(trusted(e))overlay.update(value);});
  ipcMain.on('window:mouse-refresh',e=>{if(trusted(e))overlay.refresh();});
  ipcMain.on('window:mouse-hold',(e,value)=>{if(trusted(e))overlay.hold(value);});

@@ -7,7 +7,7 @@ class WindowOverlay {
   this.win=win;this.screen=screen;this.regions=null;this.ignored=null;this.manualSize=false;this.compact=false;this.held=false;this.view='session';this.height=null;
   this.timer=setInterval(()=>this.refresh(),16);this.timer.unref?.();
   win.on('resize',()=>{const [width,height]=win.getSize();if(!this.expected||width!==this.expected[0]||height!==this.expected[1])this.manualSize=true;this.refresh();});
-  win.on('move',()=>this.refresh());win.on('blur',()=>{this.held=false;this.refresh();});
+  win.on('move',()=>this.refresh());win.on('blur',()=>{this.endResize();this.held=false;this.refresh();});
   win.on('closed',()=>this.dispose());
  }
  update(value){
@@ -25,16 +25,20 @@ class WindowOverlay {
  }
  resize(width,height){this.expected=[width,height];if(this.win.getSize().some((n,i)=>n!==this.expected[i]))this.win.setSize(width,height);}
  preset(compact){this.compact=!!compact;this.manualSize=false;this.resize(compact?360:400,Math.min(this.height||300,compact?320:600));}
- hold(value){if(typeof value!=='boolean')return;this.held=value;this.refresh();}
+ beginResize(){if(this.win.isDestroyed())return;this.manualSize=true;this.held=true;this.resizing={point:{...this.screen.getCursorScreenPoint()},bounds:this.win.getBounds()};this.refresh();}
+ applyResize(){if(!this.resizing||this.win.isDestroyed())return;const {point,bounds}=this.resizing,cursor=this.screen.getCursorScreenPoint(),minimum=this.win.getMinimumSize?.()||[340,180];const width=Math.max(minimum[0],Math.round(bounds.width+cursor.x-point.x)),height=Math.max(minimum[1],Math.round(bounds.height+cursor.y-point.y));this.resize(width,height);}
+ endResize(){if(this.resizing){this.applyResize();this.resizing=null;}this.held=false;}
+ hold(value){if(typeof value!=='boolean')return;if(!value)this.endResize();this.held=value;this.refresh();}
  refresh(){
   if(this.win.isDestroyed()||!this.regions)return;
+  this.applyResize();
   const bounds=this.win.getContentBounds(),point=this.screen.getCursorScreenPoint(),x=point.x-bounds.x,y=point.y-bounds.y;
-  // Keep a small native resize corner, not an invisible border around the app.
-  const corner=contains({x:bounds.width-10,y:bounds.height-10,width:10,height:10},x,y);
+  // The native corner matches the visible 24px resize handle.
+  const corner=contains({x:bounds.width-26,y:bounds.height-26,width:26,height:26},x,y);
   const ignore=!(this.held||corner||this.regions.some(r=>contains(r,x,y)));
   if(ignore!==this.ignored){this.win.setIgnoreMouseEvents(ignore,{forward:true});this.ignored=ignore;}
  }
- reset(){this.regions=null;this.held=false;this.ignored=false;if(!this.win.isDestroyed())this.win.setIgnoreMouseEvents(false);}
- dispose(){clearInterval(this.timer);}
+ reset(){this.resizing=null;this.regions=null;this.held=false;this.ignored=false;if(!this.win.isDestroyed())this.win.setIgnoreMouseEvents(false);}
+ dispose(){this.resizing=null;clearInterval(this.timer);}
 }
 module.exports={WindowOverlay,contains,validLayout};

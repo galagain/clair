@@ -10,10 +10,11 @@ export function installOverlay(api){
    const rect=el.getBoundingClientRect(),feed=el.closest('.answer-feed');
    if(feed){const clip=feed.getBoundingClientRect();add({left:Math.max(rect.left,clip.left),right:Math.min(rect.right,clip.right),top:Math.max(rect.top,clip.top),bottom:Math.min(rect.bottom,clip.bottom)});}else add(rect);
   }
-  // Text itself passes clicks through. Its scrollbar still allows re-reading.
-  for(const el of document.querySelectorAll('.text-feed,.answer-feed'))if(visible(el)&&el.scrollHeight>el.clientHeight){const r=el.getBoundingClientRect();add({left:r.right-10,right:r.right,top:r.top,bottom:r.bottom});}
+  // A scrollable feed must receive mouse input across its whole surface.
+  const pageScrollable=document.documentElement.scrollHeight>innerHeight;
+  for(const el of document.querySelectorAll('.text-feed,.answer-feed'))if(visible(el)&&(el.scrollHeight>el.clientHeight||pageScrollable)){const r=el.getBoundingClientRect();add(r);}
   // Keep the page scrollbar reachable if a manually sized window is too short.
-  if(document.documentElement.scrollHeight>innerHeight)add({left:innerWidth-7,right:innerWidth,top:52,bottom:innerHeight-10});
+  if(pageScrollable)add({left:innerWidth-7,right:innerWidth,top:52,bottom:innerHeight-10});
   const view=['session','files','settings','coding'].find(name=>!document.getElementById(name+'-panel').hidden)||'session';
   const panel=document.getElementById(view+'-panel'),padding=parseFloat(getComputedStyle(document.body).paddingBottom)||0;
   const coding=document.getElementById('coding-panel');const bottom=Math.max(panel.getBoundingClientRect().bottom,coding.hidden?0:coding.getBoundingClientRect().bottom);const height=Math.ceil(bottom+scrollY+padding);
@@ -27,9 +28,11 @@ export function installOverlay(api){
  // Forwarded movement offers a fast path in addition to native cursor polling.
  document.addEventListener('mousemove',()=>api.overlayRefresh(),{passive:true});
  document.addEventListener('pointerdown',event=>{if(event.button!==0)return;held=true;api.overlayHold(true);},true);
- const release=()=>{if(held){held=false;api.overlayHold(false);}};
+ const release=()=>{api.resizeEnd?.();if(held){held=false;api.overlayHold(false);}};
  document.addEventListener('pointerup',release,true);document.addEventListener('pointercancel',release,true);window.addEventListener('blur',release);
  document.addEventListener('change',release,true);document.addEventListener('keydown',event=>{if(event.key==='Escape')release();});
  document.addEventListener('dragend',release);document.addEventListener('drop',release);
+ const handle=document.getElementById('window-resize');
+ handle?.addEventListener('pointerdown',event=>{if(event.button!==0)return;event.preventDefault();handle.setPointerCapture(event.pointerId);api.resizeStart?.();});
  schedule();
 }

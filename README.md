@@ -16,7 +16,7 @@ Une petite fenêtre pour transcrire une visio, traduire les échanges et propose
 
 Les quatre icônes du haut contrôlent les cartes Discours, Pistes, Traduction et Code. Sur le Mac, désactiver **Pistes** arrête aussi ses analyses automatiques et ses demandes en attente. Pour transcrire uniquement, laisse **Pistes** et **Traduction** désactivées. Sur iPhone, les icônes restent des commandes d’affichage. Sur ordinateur, **F1** affiche Discours + Pistes et **F2** affiche Code. Sur Mac, utilise **Fn + F1/F2** si les touches règlent la luminosité.
 
-Clair écoute le son de l’ordinateur et le micro. La traduction est facultative. Les nouvelles pistes s’ajoutent sous les anciennes ; remonte pour relire et clique sur **↓** pour revenir au direct.
+Clair écoute le son de l’ordinateur et le micro. La traduction est facultative. La molette fonctionne sur les zones de texte ; la poignée ronde en bas à droite permet de redimensionner la fenêtre. Les nouvelles pistes s’ajoutent sous les anciennes ; remonte pour relire et clique sur **↓** pour revenir au direct.
 
 **Coding** : ouvre **bouton ⌄ à côté de Code → Réglages Coding** pour coller un énoncé et du code, ou utilise **Alt ⇧ C** dans Firefox pour les envoyer directement à Clair, sans popup. **Alt ⇧ C** envoie le texte et le code ; **Alt ⇧ V** ajoute les images de la page. Dans **Réglages → Souris et clavier**, choisis le type d’envoi avant **＋ Ajouter** pour associer tes propres touches ou boutons. Le code contient de courts commentaires. **Suivre ma voix** adapte la solution à tes indications au micro, avec **Revenir** pour annuler. Chaque nouvel envoi Firefox remplace la solution. [Installer l’extension et l’utiliser](docs/CODING.md).
 

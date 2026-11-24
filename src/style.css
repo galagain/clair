@@ -103,10 +103,10 @@ body.compact:not(.settings-open) .answer-text{font-size:var(--reading-size)}.ans
 
 @media(max-width:380px){.titlebar{gap:4px}#opacity{width:32px;min-width:28px;margin-left:0}.titlebar .icon-button{width:24px}.titlebar .divider{margin:0 1px}}
 
-/* Only controls catch mouse input; passive reading is native click-through. */
+/* Controls and overflowing text feeds receive input; empty regions pass through. */
 #session-panel .answer-text,#session-panel .text-feed,#session-panel #points,#session-panel #clarification{user-select:none}
 .more-menu{max-height:calc(100vh - 68px);overflow-y:auto}
-body::after{content:'';position:fixed;right:3px;bottom:3px;width:6px;height:6px;border-right:1px solid rgba(170,190,207,.35);border-bottom:1px solid rgba(170,190,207,.35);pointer-events:none}
+.window-resize{position:fixed;right:2px;bottom:2px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid rgba(142,219,220,.45);border-radius:50%;background:rgba(23,31,41,.95);color:var(--accent);cursor:nwse-resize;z-index:30;touch-action:none;-webkit-app-region:no-drag}.window-resize .icon{width:14px;height:14px}.window-resize:hover{background:rgba(55,76,85,.98)}
 
 .feed-live{margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere;color:#bfdfe1}.feed-live:first-child{margin-top:0}#transcription-language{margin-left:auto}
 
