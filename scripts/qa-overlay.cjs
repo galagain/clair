@@ -28,7 +28,7 @@ const {execFileSync}=require('node:child_process');
   await click('#answer');if(await hits()!==1)console.log(await app.evaluate(({screen})=>({cursor:screen.getCursorScreenPoint(),bounds:global.qaMain.getContentBounds(),ignored:global.qaIgnored,layout:global.qaLayout,under:global.qaUnder.getContentBounds()})));assert.equal(await hits(),1,'Text must pass a real click to the target underneath');
   await click('#files-tab');await page.waitForFunction(()=>!document.querySelector('#files-panel').hidden);assert.equal(await hits(),1,'A real click on a control must stay in Clair');
   const filesBounds=await app.evaluate(()=>global.qaMain.getBounds());await click('#files-tab');await page.waitForFunction(()=>!document.querySelector('#session-panel').hidden);assert.deepEqual(await app.evaluate(()=>global.qaMain.getBounds()),filesBounds);
-  await click('#settings-tab');await click('#key');assert.equal(await page.evaluate(()=>document.activeElement.id),'key');await click('#settings-tab');
+  await click('#settings-tab');await click('#key-section > summary');await click('#key');assert.equal(await page.evaluate(()=>document.activeElement.id),'key');await click('#settings-tab');
   assert.equal(await page.locator('#opacity').isVisible(),false);await click('#opacity-toggle');await page.waitForFunction(()=>!document.querySelector('#opacity').hidden);
   const slider=await point('#opacity');pointer('drag',slider.x,slider.y,slider.x+50,slider.y+90);assert.equal(await hits(),1,'Dragging a control must not leak a click behind');await click('#opacity-toggle');assert.equal(await page.locator('#opacity').isVisible(),false);
   await click('#answer-language');execFileSync(helper,['escape']);
@@ -48,7 +48,7 @@ const {execFileSync}=require('node:child_process');
   // A manually enlarged empty area must also be transparent to OS clicks.
   await app.evaluate(()=>global.qaMain.setSize(400,520));
   let bounds=await app.evaluate(()=>global.qaMain.getBounds());pointer('click',bounds.x+200,bounds.y+480);assert.equal(await hits(),2,'Empty native bounds must not intercept clicks');
-  await click('#more-toggle');assert.equal(await page.locator('#more-menu').isVisible(),true);await click('#more-toggle');
+  await click('#settings-tab');await click('#session-settings > summary');assert.equal(await page.locator('#pin').isVisible(),true);await click('#settings-tab');
   // Native draggable strip at the bottom of the bar remains available.
   const header=await page.locator('header').boundingBox();bounds=await app.evaluate(()=>global.qaMain.getBounds());
   pointer('drag',bounds.x+header.x+5,bounds.y+header.y+header.height/2,bounds.x+header.x+35,bounds.y+header.y+header.height/2+10);

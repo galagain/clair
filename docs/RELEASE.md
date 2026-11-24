@@ -1,7 +1,8 @@
-Clair 0.29.1 corrige le défilement et agrandit la poignée de redimensionnement.
+Clair 0.29.2 regroupe les réglages dans un seul endroit.
 
-- La molette agit sur toute la surface des textes défilants : Discours, Traduction et Pistes ; les espaces vides restent traversables.
-- La nouvelle poignée ronde de 24 px, en bas à droite, se fait glisser pour agrandir ou réduire la fenêtre. Sa taille reste conservée au changement d’onglet.
-- Les protections de la version 0.29.0 contre les analyses masquées et les écritures de cache sont conservées.
+- Un seul bouton Réglages en haut ; suppression des « … », de la flèche Coding et du bouton séparé de recopie.
+- Rubriques repliables : clé API, audio et modèle, code et Firefox, iPhone, souris et clavier, recopie d’écran, fenêtre et session.
+- Les quatre icônes Discours, Pistes, Traduction et Code restent accessibles. Terminé, Échap ou un second clic sur Réglages ramènent à l’application.
+- Les réglages et la taille de fenêtre sont conservés. Les corrections de molette et de consommation API restent en place.
 
 Tests automatisés et contrôles Electron dans un profil isolé, sans appel API réel. Versions Mac Apple Silicon et Windows x64 non certifiées.

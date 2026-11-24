@@ -19,9 +19,6 @@ body.listening .status-dot{background:#76d8b6;box-shadow:0 0 0 3px rgba(118,216,
 .icon-button:hover:not(:disabled),.icon-button.selected{background:rgba(215,231,248,.09);color:var(--text)}
 .listen{color:var(--accent)}.listen.stop{color:#f1c7bd;background:rgba(220,125,105,.12)}.stop-icon{display:none}.listen.stop .play-icon{display:none}.listen.stop .stop-icon{display:block}
 #close:hover{background:rgba(220,125,105,.15);color:#f1c7bd}
-.more-menu{position:fixed;right:12px;top:58px;width:242px;padding:6px;border-radius:12px;z-index:10;background:rgba(23,31,41,.98)}
-.more-menu>button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;border:0;background:none;padding:10px;border-radius:6px;font-size:12px;color:#cdd5dc}
-.more-menu>button:hover{background:rgba(220,232,246,.07)}.more-menu>button[aria-pressed=true]{color:var(--accent)}.more-menu>button span{color:var(--faint)}
 .menu-meta{border-top:1px solid var(--line);margin:5px;padding:10px 5px 4px;display:grid;gap:7px;font-size:10px;color:var(--faint)}
 #session-panel{display:flex;flex-direction:column;gap:9px;margin-top:10px}
 .question-input{display:flex;align-items:center;gap:8px;padding:3px 5px 3px 11px;border-radius:9px;color:var(--faint);height:35px;background:rgba(19,28,37,.64)}
@@ -105,7 +102,6 @@ body.compact:not(.settings-open) .answer-text{font-size:var(--reading-size)}.ans
 
 /* Controls and overflowing text feeds receive input; empty regions pass through. */
 #session-panel .answer-text,#session-panel .text-feed,#session-panel #points,#session-panel #clarification{user-select:none}
-.more-menu{max-height:calc(100vh - 68px);overflow-y:auto}
 .window-resize{position:fixed;right:2px;bottom:2px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid rgba(142,219,220,.45);border-radius:50%;background:rgba(23,31,41,.95);color:var(--accent);cursor:nwse-resize;z-index:30;touch-action:none;-webkit-app-region:no-drag}.window-resize .icon{width:14px;height:14px}.window-resize:hover{background:rgba(55,76,85,.98)}
 
 .feed-live{margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere;color:#bfdfe1}.feed-live:first-child{margin-top:0}#transcription-language{margin-left:auto}
@@ -149,16 +145,13 @@ body.compact:not(.settings-open) .answer-feed{max-height:180px}
 
 #mouse-section{margin-bottom:18px}.mouse-binding{display:flex;gap:6px;align-items:center;margin-top:10px}.mouse-binding>span{flex:1}.mouse-binding .secondary{min-width:95px}
 
-.coding-menu{position:fixed;z-index:11;top:var(--coding-menu-top,98px);right:12px;width:min(360px,calc(100vw - 24px));max-height:calc(100vh - var(--coding-menu-top,98px) - 12px);overflow:auto;overscroll-behavior:contain;padding:12px;border-radius:12px;background:rgba(23,31,41,.98)}
-.coding-menu h2{margin:0;font-size:13px}.coding-menu .coding-selects{margin-left:auto}.coding-menu .button-row{flex-wrap:wrap}.coding-menu textarea{max-width:100%}.coding-menu .coding-heading{position:sticky;top:-12px;background:rgba(23,31,41,.98);padding:4px 0;z-index:1}
 #coding-panel .coding-code-block{margin:0}#coding-panel #coding-status{margin:0 0 6px}
 
-.section-toolbar{display:flex;align-items:center;gap:4px;width:100%;padding-top:4px;border-top:1px solid var(--line);-webkit-app-region:no-drag}.section-toolbar .section-switches{flex:1;min-width:0;width:auto;padding-top:0;border:0}.section-toolbar #coding-menu-toggle{flex:none;width:26px;height:28px}.section-toolbar #coding-menu-toggle[aria-expanded=true]{color:var(--accent);background:rgba(142,219,220,.1)}
-.coding-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:4px;position:sticky;top:-12px;z-index:1;background:rgba(23,31,41,.98);padding:4px 0 10px;margin-bottom:6px}.coding-toolbar select{width:72px;font-size:11px;padding:5px}.coding-toolbar button{font-size:11px;padding:5px;min-height:28px}.coding-toolbar #coding-clear{margin-left:0;font-size:11px}.coding-toolbar #coding-menu-close{margin-left:auto;width:24px;padding:2px}
+.section-toolbar{display:flex;align-items:center;gap:4px;width:100%;padding-top:4px;border-top:1px solid var(--line);-webkit-app-region:no-drag}.section-toolbar .section-switches{flex:1;min-width:0;width:auto;padding-top:0;border:0}
+.coding-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:4px;position:sticky;top:-12px;z-index:1;background:rgba(23,31,41,.98);padding:4px 0 10px;margin-bottom:6px}.coding-toolbar select{width:72px;font-size:11px;padding:5px}.coding-toolbar button{font-size:11px;padding:5px;min-height:28px}.coding-toolbar #coding-clear{margin-left:0;font-size:11px}
 
 .coding-voice{display:flex;flex-direction:row;align-items:center;gap:8px;font-size:12px;margin:4px 0 12px}.coding-voice input{width:auto;margin:0}
 
-.section-toolbar #mirror-toggle{flex:none;width:28px;height:28px}.section-toolbar #mirror-toggle[aria-pressed=true]{color:var(--accent);background:rgba(142,219,220,.1)}.mirror-menu{position:fixed;z-index:12;top:var(--mirror-menu-top,98px);left:12px;width:min(340px,calc(100vw - 24px));max-height:calc(100vh - var(--mirror-menu-top,98px) - 12px);overflow:auto;padding:12px;border-radius:12px;background:rgba(23,31,41,.98)}.mirror-menu h2{font-size:13px;margin:0}.mirror-menu .button-row{flex-wrap:wrap}
 
 .coding-result-toolbar{display:flex;justify-content:flex-end;height:23px;margin:-6px -5px 3px 0}.coding-result-toolbar .icon-button{width:24px;height:24px}.coding-result-toolbar .icon{width:14px;height:14px}
 
@@ -169,3 +162,10 @@ body[data-panel-mode] #translation-card{display:none}
 #coding-capture-mode{flex:1;min-width:0;width:auto;margin:0;font-size:11px;padding:5px}
 
 .mouse-binding:has(#mouse-firefox-mode){flex-wrap:wrap}#mouse-firefox-mode{width:120px;max-width:100%;padding:5px;font-size:11px}
+
+.settings-group>summary{padding:3px 0;cursor:pointer;font-size:12px;font-weight:500}.settings-group[open]>summary{margin-bottom:12px;color:var(--text)}
+#settings-panel>.settings-group{margin:0;padding:12px 0}#settings-panel>.settings-group:last-child{padding-bottom:0}
+.session-actions>button{display:flex;align-items:center;justify-content:space-between;width:100%;padding:9px 3px;border:0;border-radius:6px;background:none;text-align:left;color:var(--muted)}
+.session-actions>button:hover{background:rgba(220,232,246,.07)}.session-actions>button[aria-pressed=true]{color:var(--accent)}
+#coding-menu .coding-toolbar{position:static;background:none;padding:0 0 8px}#coding-menu textarea{max-width:100%}
+#mirror-menu .button-row{flex-wrap:wrap}

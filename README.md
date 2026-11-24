@@ -10,15 +10,17 @@ Une petite fenêtre pour transcrire une visio, traduire les échanges et propose
 
 ## Utiliser
 
-1. Ouvre Clair et ajoute ta clé OpenAI dans **Réglages**.
+1. Ouvre Clair et ajoute ta clé OpenAI dans **Réglages → Clé API**.
 2. Glisse tes PDF dans **Fichiers**, si nécessaire.
 3. Choisis la langue du discours et des réponses, puis clique sur **▶**.
+
+Tous les réglages et commandes sont réunis dans le bouton **Réglages**, avec des rubriques repliables.
 
 Les quatre icônes du haut contrôlent les cartes Discours, Pistes, Traduction et Code. Sur le Mac, désactiver **Pistes** arrête aussi ses analyses automatiques et ses demandes en attente. Pour transcrire uniquement, laisse **Pistes** et **Traduction** désactivées. Sur iPhone, les icônes restent des commandes d’affichage. Sur ordinateur, **F1** affiche Discours + Pistes et **F2** affiche Code. Sur Mac, utilise **Fn + F1/F2** si les touches règlent la luminosité.
 
 Clair écoute le son de l’ordinateur et le micro. La traduction est facultative. La molette fonctionne sur les zones de texte ; la poignée ronde en bas à droite permet de redimensionner la fenêtre. Les nouvelles pistes s’ajoutent sous les anciennes ; remonte pour relire et clique sur **↓** pour revenir au direct.
 
-**Coding** : ouvre **bouton ⌄ à côté de Code → Réglages Coding** pour coller un énoncé et du code, ou utilise **Alt ⇧ C** dans Firefox pour les envoyer directement à Clair, sans popup. **Alt ⇧ C** envoie le texte et le code ; **Alt ⇧ V** ajoute les images de la page. Dans **Réglages → Souris et clavier**, choisis le type d’envoi avant **＋ Ajouter** pour associer tes propres touches ou boutons. Le code contient de courts commentaires. **Suivre ma voix** adapte la solution à tes indications au micro, avec **Revenir** pour annuler. Chaque nouvel envoi Firefox remplace la solution. [Installer l’extension et l’utiliser](docs/CODING.md).
+**Coding** : ouvre **Réglages → Code et Firefox** pour coller un énoncé et du code, ou utilise **Alt ⇧ C** dans Firefox pour les envoyer directement à Clair, sans popup. **Alt ⇧ C** envoie le texte et le code ; **Alt ⇧ V** ajoute les images de la page. Dans **Réglages → Souris et clavier**, choisis le type d’envoi avant **＋ Ajouter** pour associer tes propres touches ou boutons. Le code contient de courts commentaires. **Suivre ma voix** adapte la solution à tes indications au micro, avec **Revenir** pour annuler. Chaque nouvel envoi Firefox remplace la solution. [Installer l’extension et l’utiliser](docs/CODING.md).
 
 **Sur iPhone** : mets les deux appareils sur le même réseau local (Mac en Ethernet possible), puis ouvre **Réglages → iPhone → Connecter** dans Clair et scanne le QR code. Les quatre icônes affichent ou masquent des cartes empilées. **⌘ ⇧ H** sur Mac ou **Ctrl ⇧ H** sur Windows masque/réaffiche Clair sans arrêter l’écoute. [Guide](docs/IPHONE.md).
 
@@ -28,4 +30,4 @@ Les appels API sont facturés sur ton compte OpenAI. La traduction envoie seulem
 
 [Développement](docs/DEVELOPMENT.md) · [Tests et limites](docs/VALIDATION.md) · [Toutes les versions](https://github.com/galagain/clair/releases)
 
-**Recopie sans Clair (Mac)** : le bouton aux deux écrans, en haut, reproduit un écran sur un autre en excluant Clair. [Utilisation](docs/RECOPIE.md).
+**Recopie sans Clair (Mac)** : **Réglages → Recopie d’écran** reproduit un écran sur un autre en excluant Clair. [Utilisation](docs/RECOPIE.md).

@@ -3,14 +3,6 @@ import {codingSolution} from './coding-core.mjs';
 export async function installCoding(api,{show,toggle}){
  const $=id=>document.getElementById(id),feed=$('coding-feed'),solution=$('coding-solution');
  let current=null,snapshot=null,busy=false,changed=false,revision=0,adaptId=null,canUndo=false;
- const menu=$('coding-menu'),trigger=$('coding-menu-toggle');
- function closeMenu(focus=false){menu.hidden=true;trigger.setAttribute('aria-expanded','false');if(focus)trigger.focus();}
- function positionMenu(){menu.style.setProperty('--coding-menu-top',Math.ceil(document.querySelector('.titlebar').getBoundingClientRect().bottom+6)+'px');}
- trigger.onclick=()=>{if(!menu.hidden){closeMenu();return;}$('more-menu').hidden=true;$('more-toggle').setAttribute('aria-expanded','false');api.preserveSize();positionMenu();menu.hidden=false;trigger.setAttribute('aria-expanded','true');$('coding-language').focus();};
- $('coding-menu-close').onclick=()=>closeMenu(true);
- document.addEventListener('pointerdown',event=>{if(!event.target.closest('#coding-menu,#coding-menu-toggle'))closeMenu();});
- document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!menu.hidden){event.stopImmediatePropagation();closeMenu(true);}},true);
- window.addEventListener('resize',positionMenu);window.addEventListener('scroll',positionMenu);
  const message=text=>{$('coding-status').textContent=text;$('coding-menu-status').textContent=text;};
  function controls(){$('coding-reanalyze').disabled=busy||!snapshot||current?.state!=='done';$('coding-undo').hidden=!canUndo;$('coding-stop').hidden=!busy;$('coding-copy').disabled=!codingSolution(current?.text).trim();}
  function fit(){if($('coding-panel').hidden)return;const value=Math.max(100,Math.min(600,innerHeight-feed.getBoundingClientRect().top-24))+'px';if(feed.style.maxHeight!==value)feed.style.maxHeight=value;}
@@ -31,7 +23,7 @@ export async function installCoding(api,{show,toggle}){
   if(event.type==='coding-updated'){revision++;current={...event.item};canUndo=!!event.canUndo;adaptId=null;busy=false;message('');render();return;}
   if(['coding-unchanged','coding-adapt-error','coding-adapt-canceled'].includes(event.type)&&(event.id===adaptId||event.id==null)){adaptId=null;busy=false;message(event.error||(event.manual?'Code déjà adapté aux échanges.':''));controls();return;}
   if(event.type==='coding-start'){
-   revision++;adaptId=null;canUndo=false;current={...event.item};fill(event.snapshot);busy=true;closeMenu();show();$('coding-input').open=false;$('coding-browser').open=false;
+   revision++;adaptId=null;canUndo=false;current={...event.item};fill(event.snapshot);busy=true;show();$('coding-input').open=false;$('coding-browser').open=false;
    $('coding-receipt').textContent='Reçu · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+(snapshot.source?' · '+snapshot.source:'')+(snapshot.images?.length?' · '+snapshot.images.length+' image(s)':'');$('coding-receipt').title=snapshot.title||'Exercice reçu';message('Résolution…');render();feed.scrollTop=0;
   }
   if(event.type==='coding-delta'&&event.id===current?.id){current.text=event.text;render();}
