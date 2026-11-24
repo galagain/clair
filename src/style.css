@@ -169,5 +169,3 @@ body[data-panel-mode] #translation-card{display:none}
 .session-actions>button:hover{background:rgba(220,232,246,.07)}.session-actions>button[aria-pressed=true]{color:var(--accent)}
 #coding-menu .coding-toolbar{position:static;background:none;padding:0 0 8px}#coding-menu textarea{max-width:100%}
 #mirror-menu .button-row{flex-wrap:wrap}
-
-.window-buttons #mirror-toggle[aria-pressed=true]{color:var(--accent);background:rgba(142,219,220,.1)}

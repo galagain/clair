@@ -10,7 +10,7 @@ const os=require('node:os');
   const page=await app.firstWindow(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.waitForFunction(()=>!!document.querySelector('#mirror-start').onclick);
   await app.evaluate(({app})=>{
    const require=process.getBuiltinModule('module').createRequire(app.getAppPath()+'/package.json'),{EventEmitter}=require('node:events'),{Mirror}=require('./src/mirror.cjs'),state=Mirror.prototype.state;
-   Mirror.prototype.state=function(){this.available=true;this.displays=()=>global.mirrorQaDisplays||[{id:101,label:'Mac test',size:{width:1440,height:900}},{id:202,label:'Externe test',size:{width:1920,height:1080}}];this.spawn=(_file,args)=>{
+   Mirror.prototype.state=function(){this.available=true;this.displays=()=>[{id:101,label:'Mac test',size:{width:1440,height:900}},{id:202,label:'Externe test',size:{width:1920,height:1080}}];this.spawn=(_file,args)=>{
     global.mirrorQaLaunches=(global.mirrorQaLaunches||0)+1;global.mirrorQaArgs=args;
     const child=new EventEmitter();Object.assign(child,{stdout:new EventEmitter(),stderr:new EventEmitter(),stdin:Object.assign(new EventEmitter(),{end(){}}),kill(){child.killed=true;}});global.mirrorQaChild=child;
     setTimeout(()=>{child.stdout.emit('data',Buffer.from(JSON.stringify(global.mirrorQaPermission?{type:'error',message:'Autorisez Clair Recopie dans Enregistrement de l’écran.'}:{type:'ready',source:101,target:202,width:args.at(-1)==='native'?5120:1920,height:args.at(-1)==='native'?2880:1080,fps:args.at(-1)==='native'?60:30})+'\n'));},20);return child;
@@ -34,17 +34,6 @@ const os=require('node:os');
   await app.evaluate(()=>{global.mirrorQaPermission=false;});await page.locator('#mirror-start').click();await page.waitForFunction(()=>document.querySelector('#mirror-status').textContent==='Recopie active.');
   await app.evaluate(({screen})=>screen.emit('display-removed'));await page.waitForFunction(()=>document.querySelector('#mirror-menu').dataset.active==='false');assert.match(await page.locator('#mirror-status').textContent(),/écrans/);assert.deepEqual((await app.evaluate(()=>global.mirrorQaArgs)).slice(-2),['--quality','native']);
   await page.locator('#mirror-start').click();await page.waitForFunction(()=>document.querySelector('#mirror-status').textContent==='Recopie active.');await app.evaluate(({powerMonitor})=>powerMonitor.emit('lock-screen'));assert.equal((await page.evaluate(()=>window.clair.mirrorState())).status,'off');
-  await page.locator('#settings-done').click();
-  assert.equal(await page.locator('#files-tab').evaluate(el=>el.nextElementSibling.id),'mirror-toggle');
-  const quickBounds=await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].getBounds());
-  await page.locator('#mirror-toggle').click();await page.waitForFunction(()=>document.querySelector('#mirror-status').textContent==='Recopie active.');
-  assert.equal(await page.locator('#settings-panel').isVisible(),false);assert.equal(await page.locator('#mirror-toggle').getAttribute('aria-pressed'),'true');
-  assert.deepEqual(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].getBounds()),quickBounds);
-  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('clair-mirror-displays'))),{source:101,target:202});
-  await page.locator('#mirror-toggle').click();await page.waitForFunction(()=>document.querySelector('#mirror-toggle').getAttribute('aria-pressed')==='false');
-  const launches=await app.evaluate(()=>global.mirrorQaLaunches);
-  await app.evaluate(()=>{global.mirrorQaDisplays=[{id:101,label:'Mac test',size:{width:1440,height:900}}];});
-  await page.locator('#mirror-toggle').click();assert.equal(await page.locator('#settings-panel').isVisible(),true);assert.equal(await page.locator('#mirror-menu').evaluate(el=>el.open),true);assert.equal(await app.evaluate(()=>global.mirrorQaLaunches),launches);
-  assert.deepEqual(errors,[]);console.log('Mirror UI QA passed with a simulated native helper: explicit activation, display selection, native/economical modes, quality persistence after reload, output dimensions, stable bounds, stop button, permission error, background continuity, display removal, screen lock, header quick start/stop, saved displays and one-display settings fallback. No screen capture or OS permission requested.');
+  assert.deepEqual(errors,[]);console.log('Mirror UI QA passed with a simulated native helper: explicit activation, display selection, native/economical modes, quality persistence after reload, output dimensions, stable bounds, stop button, permission error, background continuity, display removal and screen lock. No screen capture or OS permission requested.');
  }finally{await app.close();await fs.rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:200});}
 })().catch(error=>{console.error(error);process.exitCode=1;});
